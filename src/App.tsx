@@ -353,7 +353,7 @@ export default function App() {
             <SectionHeader
               label="AI Writing Assistant"
               title={<>Draft your story in <em style={{ color: '#FFA30F', fontStyle: 'italic' }}>minutes.</em></>}
-              description="Tell us about your role, your pain point, and your outcome — we'll write a first draft."
+              description="Tell us about your role, your pain point, and your outcome — we'll generate a ready-to-use story, written to best practices and post eligibility requirements."
               dark
             />
             <AIAssistant />
