@@ -55,7 +55,7 @@ app.post("/api/generate-post", async (req, res) => {
     `.trim();
 
     const response = await genAI.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-2.5-flash",
       contents: prompt,
     });
 
