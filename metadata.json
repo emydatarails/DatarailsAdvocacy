@@ -1,0 +1,6 @@
+{
+  "name": "Datarails Advocacy",
+  "description": "Share your Datarails story on LinkedIn and earn $100. Featuring an AI post generator for finance professionals.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
