@@ -296,25 +296,27 @@ export default function App() {
               description="Share your genuine experience and get rewarded within days."
             />
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-10">
-              {[
+            {(() => {
+              const steps = [
                 { step: '01', icon: <FileText size={22} />, title: 'Write your post', desc: 'Publish a LinkedIn post about your real experience with Datarails.' },
                 { step: '02', icon: <ClipboardCheck size={22} />, title: 'Submit the link', desc: "Paste your URL in our form. We'll review it within 2 business days." },
                 { step: '03', icon: <Users size={22} />, title: 'Accept sponsorship', desc: 'We send a sponsorship request to fund the reach of your post.' },
                 { step: '04', icon: <DollarSign size={22} />, title: 'Get paid', desc: 'Receive your $100 reward after accepting the sponsorship request.' },
-              ].map((item, i) => (
+              ];
+
+              const StepCard = ({ item, i }: { item: typeof steps[0]; i: number }) => (
                 <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 16 }}
+                  initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: i * 0.1, ease: [0.2, 0.8, 0.2, 1] }}
-                  className="relative"
+                  transition={{ duration: 0.5, delay: i * 0.15, ease: [0.2, 0.8, 0.2, 1] }}
+                  className="process-step relative"
+                  style={{ animationDelay: `${i * 0.9}s` }}
                 >
                   {/* Ghost step number */}
                   <div
                     style={{
-                      position: 'absolute', top: -24, left: -8,
+                      position: 'absolute', top: -20, left: 0,
                       fontSize: 80, fontWeight: 600, lineHeight: 1,
                       color: 'rgba(12,20,43,0.04)',
                       letterSpacing: '-0.02em',
@@ -325,10 +327,13 @@ export default function App() {
                     {item.step}.
                   </div>
                   <div className="relative z-10">
-                    <div className="icon-tile mb-6">{item.icon}</div>
-                    <h3
-                      style={{ fontWeight: 600, fontSize: 20, color: '#0C142B', marginBottom: 10 }}
+                    <div
+                      className="icon-tile process-step-icon mb-5"
+                      style={{ animationDelay: `${i * 0.9}s` }}
                     >
+                      {item.icon}
+                    </div>
+                    <h3 style={{ fontWeight: 600, fontSize: 20, color: '#0C142B', marginBottom: 8 }}>
                       {item.title}
                     </h3>
                     <p style={{ fontSize: 15, color: '#595959', lineHeight: 1.6 }}>
@@ -336,8 +341,43 @@ export default function App() {
                     </p>
                   </div>
                 </motion.div>
-              ))}
-            </div>
+              );
+
+              return (
+                <>
+                  {/* Desktop: flex row with animated connectors */}
+                  <div className="hidden lg:flex items-start gap-0">
+                    {steps.map((item, i) => (
+                      <React.Fragment key={i}>
+                        <div className="flex-1">
+                          <StepCard item={item} i={i} />
+                        </div>
+                        {i < steps.length - 1 && (
+                          <div
+                            className="flex-shrink-0 flex items-start"
+                            style={{ paddingTop: 30, width: 48 }}
+                          >
+                            <div className="step-connector w-full">
+                              <span
+                                className="step-connector-dot"
+                                style={{ animationDelay: `${i * 0.9 + 0.45}s` }}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </div>
+
+                  {/* Mobile / tablet: 2-col grid */}
+                  <div className="grid md:grid-cols-2 gap-10 lg:hidden">
+                    {steps.map((item, i) => (
+                      <StepCard key={i} item={item} i={i} />
+                    ))}
+                  </div>
+                </>
+              );
+            })()}
           </div>
         </section>
 
