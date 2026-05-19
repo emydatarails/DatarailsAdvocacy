@@ -169,13 +169,13 @@ export default function App() {
                 style={{
                   fontWeight: 600,
                   fontSize: 'clamp(48px, 7vw, 88px)',
-                  lineHeight: 0.95,
+                  lineHeight: 1.05,
                   letterSpacing: '-0.035em',
                   color: '#ffffff',
                   margin: '0 0 28px',
                 }}
               >
-                Your Datarails story<br />
+                Your Datarails story{' '}
                 <em style={{ color: '#FFA30F', fontStyle: 'italic', fontWeight: 600 }}>
                   is worth sharing.
                 </em>
