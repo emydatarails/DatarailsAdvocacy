@@ -296,25 +296,27 @@ export default function App() {
               description="Share your genuine experience and get rewarded within days."
             />
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-10">
-              {[
+            {(() => {
+              const steps = [
                 { step: '01', icon: <FileText size={22} />, title: 'Write your post', desc: 'Publish a LinkedIn post about your real experience with Datarails.' },
                 { step: '02', icon: <ClipboardCheck size={22} />, title: 'Submit the link', desc: "Paste your URL in our form. We'll review it within 2 business days." },
                 { step: '03', icon: <Users size={22} />, title: 'Accept sponsorship', desc: 'We send a sponsorship request to fund the reach of your post.' },
                 { step: '04', icon: <DollarSign size={22} />, title: 'Get paid', desc: 'Receive your $100 reward after accepting the sponsorship request.' },
-              ].map((item, i) => (
+              ];
+
+              const StepCard = ({ item, i }: { item: typeof steps[0]; i: number }) => (
                 <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 16 }}
+                  initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: i * 0.1, ease: [0.2, 0.8, 0.2, 1] }}
-                  className="relative"
+                  transition={{ duration: 0.5, delay: i * 0.15, ease: [0.2, 0.8, 0.2, 1] }}
+                  className="process-step relative"
+                  style={{ animationDelay: `${i * 0.9}s` }}
                 >
                   {/* Ghost step number */}
                   <div
                     style={{
-                      position: 'absolute', top: -24, left: -8,
+                      position: 'absolute', top: -20, left: 0,
                       fontSize: 80, fontWeight: 600, lineHeight: 1,
                       color: 'rgba(12,20,43,0.04)',
                       letterSpacing: '-0.02em',
@@ -325,10 +327,13 @@ export default function App() {
                     {item.step}.
                   </div>
                   <div className="relative z-10">
-                    <div className="icon-tile mb-6">{item.icon}</div>
-                    <h3
-                      style={{ fontWeight: 600, fontSize: 20, color: '#0C142B', marginBottom: 10 }}
+                    <div
+                      className="icon-tile process-step-icon mb-5"
+                      style={{ animationDelay: `${i * 0.9}s` }}
                     >
+                      {item.icon}
+                    </div>
+                    <h3 style={{ fontWeight: 600, fontSize: 20, color: '#0C142B', marginBottom: 8 }}>
                       {item.title}
                     </h3>
                     <p style={{ fontSize: 15, color: '#595959', lineHeight: 1.6 }}>
@@ -336,8 +341,43 @@ export default function App() {
                     </p>
                   </div>
                 </motion.div>
-              ))}
-            </div>
+              );
+
+              return (
+                <>
+                  {/* Desktop: flex row with animated connectors */}
+                  <div className="hidden lg:flex items-start gap-0">
+                    {steps.map((item, i) => (
+                      <React.Fragment key={i}>
+                        <div className="flex-1">
+                          <StepCard item={item} i={i} />
+                        </div>
+                        {i < steps.length - 1 && (
+                          <div
+                            className="flex-shrink-0 flex items-start"
+                            style={{ paddingTop: 30, width: 48 }}
+                          >
+                            <div className="step-connector w-full">
+                              <span
+                                className="step-connector-dot"
+                                style={{ animationDelay: `${i * 0.9 + 0.45}s` }}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </div>
+
+                  {/* Mobile / tablet: 2-col grid */}
+                  <div className="grid md:grid-cols-2 gap-10 lg:hidden">
+                    {steps.map((item, i) => (
+                      <StepCard key={i} item={item} i={i} />
+                    ))}
+                  </div>
+                </>
+              );
+            })()}
           </div>
         </section>
 
@@ -667,8 +707,9 @@ const Chip = ({ label, selected, onClick }: { label: string; selected: boolean; 
 
 // ─── AI Assistant ─────────────────────────────────────────────────────────────
 function AIAssistant() {
-  const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'role' | 'moment' | 'outcome' | 'tone'>('role');
+  const [loading, setLoading]   = useState(false);
+  const [step, setStep]         = useState(0);
+  const [direction, setDirection] = useState(1); // 1 = forward, -1 = back
   const [formData, setFormData] = useState({
     profession: '',
     industry: '',
@@ -697,6 +738,34 @@ function AIAssistant() {
     'Faster, self-service board reporting',
     'Replaced 50+ manual spreadsheets',
   ];
+
+  const STEPS = [
+    {
+      label: 'Role',
+      title: 'Who are you?',
+      subtitle: 'Select your job title and industry so we can tailor your story.',
+    },
+    {
+      label: 'Moment',
+      title: 'What was the pain?',
+      subtitle: 'Pick the frustrations you experienced before Datarails. Choose up to 3.',
+    },
+    {
+      label: 'Outcome',
+      title: 'What changed?',
+      subtitle: 'Select the wins you achieved after using Datarails. Choose up to 3.',
+    },
+    {
+      label: 'Tone',
+      title: 'How should it sound?',
+      subtitle: 'Pick your writing style, then generate your post.',
+    },
+  ];
+
+  const goTo = (next: number) => {
+    setDirection(next > step ? 1 : -1);
+    setStep(next);
+  };
 
   const toggle = (field: 'specificMoments' | 'keyOutcomes', value: string) => {
     setFormData(prev => {
@@ -733,181 +802,330 @@ function AIAssistant() {
     }
   };
 
-  const TABS = ['role', 'moment', 'outcome', 'tone'] as const;
-  const TAB_LABELS = { role: 'Role', moment: 'Moment', outcome: 'Outcome', tone: 'Tone' };
-
   const inputStyle: React.CSSProperties = {
-    width: '100%', background: '#0C142B',
+    width: '100%',
+    background: 'rgba(255,255,255,0.04)',
     border: '1px solid rgba(255,255,255,0.1)',
-    borderRadius: 12, padding: '14px 16px',
-    color: '#E7E9F1', fontFamily: 'var(--font-sans)',
-    fontSize: 14, fontWeight: 400, outline: 'none',
+    borderRadius: 14,
+    padding: '16px 20px',
+    color: '#E7E9F1',
+    fontFamily: 'var(--font-sans)',
+    fontSize: 16,
+    fontWeight: 400,
+    outline: 'none',
     boxSizing: 'border-box',
   };
 
   const optionRowStyle = (selected: boolean): React.CSSProperties => ({
-    textAlign: 'left', padding: '14px 18px',
-    borderRadius: 12, fontSize: 14, fontWeight: 400,
-    cursor: 'pointer', border: '1px solid',
-    transition: 'all 150ms',
-    background: selected ? 'rgba(255,163,15,0.08)' : 'rgba(255,255,255,0.02)',
-    borderColor: selected ? '#FFA30F' : 'rgba(255,255,255,0.07)',
-    color: selected ? '#FFA30F' : '#A9AEC2',
+    textAlign: 'left',
+    padding: '16px 20px',
+    borderRadius: 14,
+    fontSize: 16,
+    fontWeight: 500,
+    cursor: 'pointer',
+    border: '1px solid',
+    transition: 'all 180ms cubic-bezier(0.2,0.8,0.2,1)',
+    background: selected ? 'rgba(255,163,15,0.1)' : 'rgba(255,255,255,0.02)',
+    borderColor: selected ? '#FFA30F' : 'rgba(255,255,255,0.08)',
+    color: selected ? '#FFA30F' : '#C4C8D8',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 12,
   });
 
+  const checkIcon = (selected: boolean) => (
+    <span style={{
+      flexShrink: 0,
+      width: 22, height: 22,
+      borderRadius: '50%',
+      border: `2px solid ${selected ? '#FFA30F' : 'rgba(255,255,255,0.15)'}`,
+      background: selected ? '#FFA30F' : 'transparent',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      transition: 'all 180ms',
+      fontSize: 12, color: '#0C142B', fontWeight: 900,
+    }}>
+      {selected && '✓'}
+    </span>
+  );
+
   return (
-    <div
-      style={{
-        background: '#131B36',
-        border: '1px solid rgba(255,255,255,0.06)',
-        borderRadius: 28,
-        padding: '40px 44px',
-      }}
-    >
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
-        <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#FFA30F' }}>
-          AI Post Generator
+    <div style={{ background: '#131B36', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 28, overflow: 'hidden' }}>
+
+      {/* Header bar */}
+      <div style={{ padding: '24px 40px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#FFA30F', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Sparkles size={14} /> AI Post Generator
         </span>
-        <span
-          style={{
-            fontSize: 9, fontWeight: 900, letterSpacing: '0.12em', textTransform: 'uppercase',
-            color: '#6B7188', background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.07)', padding: '3px 10px', borderRadius: 6,
-          }}
-        >
+        <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6B7188', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', padding: '4px 10px', borderRadius: 6 }}>
           Beta
         </span>
       </div>
 
-      {/* Tab bar */}
-      <div className="flex gap-2 mb-8 overflow-x-auto no-scrollbar pb-1">
-        {TABS.map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            style={{
-              padding: '9px 20px',
-              borderRadius: 999,
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase',
-              cursor: 'pointer',
-              border: 'none',
-              transition: 'all 150ms',
-              background: activeTab === tab ? '#FFA30F' : 'rgba(255,255,255,0.05)',
-              color: activeTab === tab ? '#0C142B' : '#6B7188',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {TAB_LABELS[tab]}
-          </button>
-        ))}
-      </div>
-
-      {/* Tab content */}
-      <div style={{ minHeight: 260 }}>
-        {activeTab === 'role' && (
-          <motion.div initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
-            <div>
-              <label style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#6B7188', display: 'block', marginBottom: 14 }}>My Role</label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
-                {professions.map(p => <Chip key={p} label={p} selected={formData.profession === p} onClick={() => setFormData({ ...formData, profession: p })} />)}
-              </div>
-              <input type="text" placeholder="Or type custom role..." value={formData.profession}
-                onChange={e => setFormData({ ...formData, profession: e.target.value })} style={inputStyle} />
-            </div>
-            <div>
-              <label style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#6B7188', display: 'block', marginBottom: 14 }}>Industry</label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {industries.map(ind => <Chip key={ind} label={ind} selected={formData.industry === ind} onClick={() => setFormData({ ...formData, industry: ind })} />)}
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {activeTab === 'moment' && (
-          <motion.div initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-              <label style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#6B7188' }}>The Moment (up to 3)</label>
-              <span style={{ fontSize: 10, color: '#FFA30F', fontWeight: 700 }}>{formData.specificMoments.length}/3</span>
-            </div>
-            {moments.map(m => (
-              <button key={m} type="button" onClick={() => toggle('specificMoments', m)} style={optionRowStyle(formData.specificMoments.includes(m))}>
-                {m}
-              </button>
-            ))}
-            <textarea rows={2} placeholder="Or describe your own moment..." value={customMoment}
-              onChange={e => setCustomMoment(e.target.value)}
-              style={{ ...inputStyle, resize: 'none', marginTop: 4 }} />
-          </motion.div>
-        )}
-
-        {activeTab === 'outcome' && (
-          <motion.div initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-              <label style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#6B7188' }}>The Outcome (up to 3)</label>
-              <span style={{ fontSize: 10, color: '#FFA30F', fontWeight: 700 }}>{formData.keyOutcomes.length}/3</span>
-            </div>
-            {outcomes.map(o => (
-              <button key={o} type="button" onClick={() => toggle('keyOutcomes', o)} style={optionRowStyle(formData.keyOutcomes.includes(o))}>
-                {o}
-              </button>
-            ))}
-          </motion.div>
-        )}
-
-        {activeTab === 'tone' && (
-          <motion.div initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            <label style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#6B7188', display: 'block' }}>
-              Tone &amp; Writing Style
-            </label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              {([
-                { id: 'professional', label: 'Professional', desc: 'Polished and structured' },
-                { id: 'punchy',       label: 'Punchy',       desc: 'Short. Hard-hitting.' },
-                { id: 'casual',       label: 'Casual',       desc: 'Like a colleague chat' },
-                { id: 'detailed',     label: 'Detailed',     desc: 'Full narrative arc' },
-              ] as const).map(s => (
+      {/* Step progress bar */}
+      <div style={{ padding: '32px 40px 0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+          {STEPS.map((s, i) => {
+            const done    = i < step;
+            const current = i === step;
+            return (
+              <React.Fragment key={i}>
+                {/* Circle */}
                 <button
-                  key={s.id}
-                  onClick={() => setFormData({ ...formData, style: s.id })}
+                  onClick={() => i <= step && goTo(i)}
                   style={{
-                    padding: '16px 18px', borderRadius: 16,
-                    border: '1px solid',
-                    borderColor: formData.style === s.id ? '#FFA30F' : 'rgba(255,255,255,0.06)',
-                    background: formData.style === s.id ? 'rgba(255,163,15,0.08)' : 'rgba(255,255,255,0.02)',
-                    cursor: 'pointer', textAlign: 'left', transition: 'all 150ms',
+                    flexShrink: 0,
+                    width: 42, height: 42,
+                    borderRadius: '50%',
+                    border: current ? '2px solid #FFA30F' : done ? '2px solid #FFA30F' : '2px solid rgba(255,255,255,0.1)',
+                    background: done ? '#FFA30F' : current ? 'rgba(255,163,15,0.12)' : 'rgba(255,255,255,0.03)',
+                    color: done ? '#0C142B' : current ? '#FFA30F' : '#6B7188',
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: 14, fontWeight: 800,
+                    cursor: i <= step ? 'pointer' : 'default',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transition: 'all 250ms',
+                    boxShadow: current ? '0 0 0 4px rgba(255,163,15,0.15)' : 'none',
                   }}
                 >
-                  <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: formData.style === s.id ? '#FFA30F' : '#6B7188', marginBottom: 4 }}>
-                    {s.label}
-                  </div>
-                  <div style={{ fontSize: 12, color: formData.style === s.id ? '#A9AEC2' : '#6B7188' }}>{s.desc}</div>
+                  {done ? '✓' : i + 1}
+                </button>
+                {/* Connector line */}
+                {i < STEPS.length - 1 && (
+                  <div style={{ flex: 1, height: 2, background: i < step ? '#FFA30F' : 'rgba(255,255,255,0.07)', transition: 'background 300ms' }} />
+                )}
+              </React.Fragment>
+            );
+          })}
+        </div>
+        {/* Step labels */}
+        <div style={{ display: 'flex', marginTop: 10 }}>
+          {STEPS.map((s, i) => (
+            <React.Fragment key={i}>
+              <div style={{ width: 42, textAlign: 'center', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: i === step ? '#FFA30F' : i < step ? '#A9AEC2' : '#3D4460', flexShrink: 0, transition: 'color 250ms' }}>
+                {s.label}
+              </div>
+              {i < STEPS.length - 1 && <div style={{ flex: 1 }} />}
+            </React.Fragment>
+          ))}
+        </div>
+      </div>
+
+      {/* Step heading */}
+      <div style={{ padding: '28px 40px 0' }}>
+        <motion.div
+          key={`heading-${step}`}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
+        >
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#FFA30F', marginBottom: 10 }}>
+            Step {step + 1} of {STEPS.length}
+          </div>
+          <h3 style={{ margin: 0, fontSize: 28, fontWeight: 700, color: '#E7E9F1', lineHeight: 1.2, marginBottom: 8 }}>
+            {STEPS[step].title}
+          </h3>
+          <p style={{ margin: 0, fontSize: 15, color: '#6B7188', lineHeight: 1.6 }}>
+            {STEPS[step].subtitle}
+          </p>
+        </motion.div>
+      </div>
+
+      {/* Step content */}
+      <div style={{ padding: '28px 40px 0', minHeight: 280 }}>
+        <motion.div
+          key={`content-${step}`}
+          initial={{ opacity: 0, x: direction * 24 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.32, ease: [0.2, 0.8, 0.2, 1] }}
+        >
+
+          {/* ── Step 0: Role ── */}
+          {step === 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6B7188', display: 'block', marginBottom: 14 }}>
+                  My Role
+                </label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 14 }}>
+                  {professions.map(p => (
+                    <button
+                      key={p}
+                      onClick={() => setFormData({ ...formData, profession: p })}
+                      style={{
+                        padding: '12px 20px', borderRadius: 12, fontSize: 15, fontWeight: 600,
+                        cursor: 'pointer', border: '1px solid', transition: 'all 180ms',
+                        background: formData.profession === p ? '#FFA30F' : 'rgba(255,255,255,0.04)',
+                        borderColor: formData.profession === p ? '#FFA30F' : 'rgba(255,255,255,0.1)',
+                        color: formData.profession === p ? '#0C142B' : '#C4C8D8',
+                      }}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+                <input
+                  type="text"
+                  placeholder="Or type your role..."
+                  value={formData.profession}
+                  onChange={e => setFormData({ ...formData, profession: e.target.value })}
+                  style={inputStyle}
+                />
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6B7188', display: 'block', marginBottom: 14 }}>
+                  Industry
+                </label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                  {industries.map(ind => (
+                    <button
+                      key={ind}
+                      onClick={() => setFormData({ ...formData, industry: ind })}
+                      style={{
+                        padding: '12px 20px', borderRadius: 12, fontSize: 15, fontWeight: 600,
+                        cursor: 'pointer', border: '1px solid', transition: 'all 180ms',
+                        background: formData.industry === ind ? 'rgba(255,163,15,0.12)' : 'rgba(255,255,255,0.04)',
+                        borderColor: formData.industry === ind ? '#FFA30F' : 'rgba(255,255,255,0.1)',
+                        color: formData.industry === ind ? '#FFA30F' : '#C4C8D8',
+                      }}
+                    >
+                      {ind}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── Step 1: Moment ── */}
+          {step === 1 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 2 }}>
+                <span style={{ fontSize: 13, color: '#FFA30F', fontWeight: 700 }}>
+                  {formData.specificMoments.length} / 3 selected
+                </span>
+              </div>
+              {moments.map(m => (
+                <button key={m} type="button" onClick={() => toggle('specificMoments', m)} style={optionRowStyle(formData.specificMoments.includes(m))}>
+                  {checkIcon(formData.specificMoments.includes(m))}
+                  {m}
+                </button>
+              ))}
+              <textarea
+                rows={2}
+                placeholder="Or describe your own pain point..."
+                value={customMoment}
+                onChange={e => setCustomMoment(e.target.value)}
+                style={{ ...inputStyle, resize: 'none', marginTop: 6 }}
+              />
+            </div>
+          )}
+
+          {/* ── Step 2: Outcome ── */}
+          {step === 2 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 2 }}>
+                <span style={{ fontSize: 13, color: '#FFA30F', fontWeight: 700 }}>
+                  {formData.keyOutcomes.length} / 3 selected
+                </span>
+              </div>
+              {outcomes.map(o => (
+                <button key={o} type="button" onClick={() => toggle('keyOutcomes', o)} style={optionRowStyle(formData.keyOutcomes.includes(o))}>
+                  {checkIcon(formData.keyOutcomes.includes(o))}
+                  {o}
                 </button>
               ))}
             </div>
+          )}
 
-            <div style={{ paddingTop: 16, textAlign: 'center' }}>
-              <p style={{ fontSize: 10, color: '#6B7188', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.18em', marginBottom: 20 }}>
-                Ready to draft your story?
-              </p>
-              <button
-                onClick={generate}
-                disabled={loading}
-                className="btn-yellow"
-                style={{ width: '100%', justifyContent: 'center', fontSize: 15, padding: '18px 32px', borderRadius: 16, opacity: loading ? 0.5 : 1 }}
-              >
-                {loading ? (
-                  <div style={{ width: 18, height: 18, border: '2px solid rgba(12,20,43,0.3)', borderTop: '2px solid #0C142B', borderRadius: '50%', animation: 'spin 0.6s linear infinite' }} />
-                ) : (
-                  <Sparkles size={18} />
-                )}
-                {loading ? 'Writing your post...' : 'Generate LinkedIn Post'}
-              </button>
+          {/* ── Step 3: Tone ── */}
+          {step === 3 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                {([
+                  { id: 'professional', label: 'Professional', desc: 'Polished and structured', emoji: '💼' },
+                  { id: 'punchy',       label: 'Punchy',       desc: 'Short. Hard-hitting.',   emoji: '⚡' },
+                  { id: 'casual',       label: 'Casual',       desc: 'Like a colleague chat',  emoji: '💬' },
+                  { id: 'detailed',     label: 'Detailed',     desc: 'Full narrative arc',      emoji: '📖' },
+                ] as const).map(s => (
+                  <button
+                    key={s.id}
+                    onClick={() => setFormData({ ...formData, style: s.id })}
+                    style={{
+                      padding: '20px', borderRadius: 16, border: '1px solid', cursor: 'pointer',
+                      textAlign: 'left', transition: 'all 180ms cubic-bezier(0.2,0.8,0.2,1)',
+                      borderColor: formData.style === s.id ? '#FFA30F' : 'rgba(255,255,255,0.07)',
+                      background: formData.style === s.id ? 'rgba(255,163,15,0.1)' : 'rgba(255,255,255,0.02)',
+                      boxShadow: formData.style === s.id ? '0 0 0 1px #FFA30F' : 'none',
+                    }}
+                  >
+                    <div style={{ fontSize: 22, marginBottom: 8 }}>{s.emoji}</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: formData.style === s.id ? '#FFA30F' : '#E7E9F1', marginBottom: 4 }}>
+                      {s.label}
+                    </div>
+                    <div style={{ fontSize: 13, color: '#6B7188', lineHeight: 1.4 }}>{s.desc}</div>
+                  </button>
+                ))}
+              </div>
             </div>
-          </motion.div>
+          )}
+
+        </motion.div>
+      </div>
+
+      {/* Navigation footer */}
+      <div style={{ padding: '28px 40px 36px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
+        {step > 0 ? (
+          <button
+            onClick={() => goTo(step - 1)}
+            style={{
+              background: 'transparent', border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: 12, padding: '14px 24px', fontSize: 15, fontWeight: 600,
+              color: '#6B7188', cursor: 'pointer', fontFamily: 'var(--font-sans)',
+              transition: 'all 180ms', display: 'flex', alignItems: 'center', gap: 8,
+            }}
+            onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.color = '#A9AEC2'; }}
+            onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = '#6B7188'; }}
+          >
+            ← Back
+          </button>
+        ) : <div />}
+
+        {step < STEPS.length - 1 ? (
+          <button
+            onClick={() => goTo(step + 1)}
+            style={{
+              background: '#FFA30F', border: 'none', borderRadius: 12,
+              padding: '16px 32px', fontSize: 16, fontWeight: 700,
+              color: '#0C142B', cursor: 'pointer', fontFamily: 'var(--font-sans)',
+              display: 'flex', alignItems: 'center', gap: 10,
+              transition: 'all 180ms', boxShadow: '0 4px 16px rgba(255,163,15,0.3)',
+            }}
+            onMouseOver={e => { e.currentTarget.style.background = '#FFB833'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(255,163,15,0.4)'; }}
+            onMouseOut={e => { e.currentTarget.style.background = '#FFA30F'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(255,163,15,0.3)'; }}
+          >
+            Continue <span style={{ fontSize: 18 }}>→</span>
+          </button>
+        ) : (
+          <button
+            onClick={generate}
+            disabled={loading}
+            style={{
+              background: loading ? 'rgba(255,163,15,0.5)' : '#FFA30F',
+              border: 'none', borderRadius: 12,
+              padding: '16px 32px', fontSize: 16, fontWeight: 700,
+              color: '#0C142B', cursor: loading ? 'not-allowed' : 'pointer',
+              fontFamily: 'var(--font-sans)',
+              display: 'flex', alignItems: 'center', gap: 10,
+              transition: 'all 180ms', boxShadow: '0 4px 16px rgba(255,163,15,0.3)',
+            }}
+          >
+            {loading ? (
+              <div style={{ width: 18, height: 18, border: '2.5px solid rgba(12,20,43,0.3)', borderTop: '2.5px solid #0C142B', borderRadius: '50%', animation: 'spin 0.6s linear infinite' }} />
+            ) : (
+              <Sparkles size={18} />
+            )}
+            {loading ? 'Writing your post...' : 'Generate My Post'}
+          </button>
         )}
       </div>
 
@@ -918,7 +1136,7 @@ function AIAssistant() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
           style={{
-            marginTop: 40,
+            margin: '0 40px 40px',
             background: '#0C142B',
             border: '1px solid rgba(255,255,255,0.07)',
             borderRadius: 24,
@@ -926,63 +1144,29 @@ function AIAssistant() {
             position: 'relative',
           }}
         >
-          <div
-            style={{
-              position: 'absolute', top: -14, left: 28,
-              background: '#FA3576', color: '#fff',
-              padding: '5px 16px', borderRadius: 999,
-              fontSize: 10, fontWeight: 700,
-              letterSpacing: '0.14em', textTransform: 'uppercase',
-            }}
-          >
+          <div style={{ position: 'absolute', top: -14, left: 28, background: '#FA3576', color: '#fff', padding: '5px 16px', borderRadius: 999, fontSize: 10, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
             Datarails AI Draft
           </div>
-          <div
-            style={{
-              fontSize: 14, lineHeight: 1.75,
-              color: '#E7E9F1', whiteSpace: 'pre-wrap',
-              marginBottom: 24, fontWeight: 400,
-            }}
-          >
+          <div style={{ fontSize: 15, lineHeight: 1.8, color: '#E7E9F1', whiteSpace: 'pre-wrap', marginBottom: 24, fontWeight: 400 }}>
             {generatedPost}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <button
               onClick={() => { navigator.clipboard.writeText(generatedPost); alert('Copied to clipboard!'); }}
-              style={{
-                width: '100%', background: '#ffffff', color: '#0C142B',
-                border: 'none', borderRadius: 12, padding: '14px 20px',
-                fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 700,
-                cursor: 'pointer', display: 'flex', alignItems: 'center',
-                justifyContent: 'center', gap: 8, transition: 'all 150ms',
-              }}
+              style={{ width: '100%', background: '#ffffff', color: '#0C142B', border: 'none', borderRadius: 12, padding: '16px 20px', fontFamily: 'var(--font-sans)', fontSize: 15, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 150ms' }}
               onMouseOver={e => (e.currentTarget.style.background = '#E7E9F1')}
               onMouseOut={e => (e.currentTarget.style.background = '#ffffff')}
             >
-              Copy Story <ClipboardCheck size={16} />
+              Copy Post <ClipboardCheck size={16} />
             </button>
             <button
               onClick={generate}
               disabled={loading}
-              style={{
-                width: '100%', background: 'transparent',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: 12, padding: '12px 20px',
-                fontFamily: 'var(--font-sans)', fontSize: 11, fontWeight: 700,
-                color: '#6B7188', letterSpacing: '0.12em', textTransform: 'uppercase',
-                cursor: 'pointer', display: 'flex', alignItems: 'center',
-                justifyContent: 'center', gap: 8,
-                transition: 'all 150ms',
-                opacity: loading ? 0.4 : 1,
-              }}
+              style={{ width: '100%', background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '14px 20px', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 700, color: '#6B7188', letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 150ms', opacity: loading ? 0.4 : 1 }}
               onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.16)'; e.currentTarget.style.color = '#A9AEC2'; }}
               onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = '#6B7188'; }}
             >
-              {loading ? (
-                <div style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.15)', borderTop: '2px solid #FFF', borderRadius: '50%', animation: 'spin 0.6s linear infinite' }} />
-              ) : (
-                <Sparkles size={14} />
-              )}
+              {loading ? <div style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.15)', borderTop: '2px solid #FFF', borderRadius: '50%', animation: 'spin 0.6s linear infinite' }} /> : <Sparkles size={14} />}
               {loading ? 'Writing...' : 'Write a different version'}
             </button>
           </div>
