@@ -1,25 +1,229 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+/* Poppins — official Datarails typeface */
+@font-face {
+  font-family: "Poppins";
+  src: url("/fonts/Poppins-Thin.ttf") format("truetype");
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Poppins";
+  src: url("/fonts/Poppins-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Poppins";
+  src: url("/fonts/Poppins-Italic.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Poppins";
+  src: url("/fonts/Poppins-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
 @import "tailwindcss";
 
+/* Datarails design tokens */
+:root {
+  --dr-navy:        #0C142B;
+  --dr-navy-2:      #131B36;
+  --dr-navy-soft:   #1A2240;
+  --dr-pink:        #FA3576;
+  --dr-pink-deep:   #C81E5C;
+  --dr-yellow:      #FFA30F;
+  --dr-yellow-soft: #FFC759;
+  --dr-cream:       #FFF9F1;
+  --dr-cream-2:     #FFEFD9;
+  --dr-white:       #FFFFFF;
+  --dr-ink:         #0C142B;
+  --dr-fg-3:        #595959;
+  --dr-muted:       #9B9B9B;
+
+  --shadow-1: 0 1px 2px rgba(12,20,43,0.04), 0 1px 1px rgba(12,20,43,0.03);
+  --shadow-2: 0 4px 12px rgba(12,20,43,0.06), 0 2px 4px rgba(12,20,43,0.04);
+  --shadow-3: 0 12px 32px rgba(0,15,55,0.10), 0 4px 10px rgba(0,15,55,0.06);
+}
+
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
-  
-  --color-brand: #0A0C10;
-  --color-accent: #3b82f6; /* blue-500 */
-  --color-success: #10b981; /* emerald-500 */
+  --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, monospace;
 }
 
 @layer base {
-  body {
-    @apply font-sans bg-[#0A0C10] text-[#E2E8F0] antialiased;
+  html, body {
+    font-family: var(--font-sans);
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    background: var(--dr-navy);
+    color: #ffffff;
   }
 }
 
-.glass-card {
-  @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl;
+/* Eyebrow / kicker label — e.g. "The Process" above a section heading */
+.eyebrow {
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 14px;
 }
 
-.section-label {
-  @apply text-[10px] uppercase font-bold tracking-[0.2em] text-blue-500 mb-4 inline-block;
+/* Highlighted key term — pink in light mode, yellow in dark */
+.kw-pink { color: var(--dr-pink); font-weight: 600; }
+.kw-yellow { color: var(--dr-yellow); font-weight: 600; font-style: normal; }
+
+/* Yellow icon tile (44px, rounded-10) */
+.icon-tile {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--dr-yellow);
+  color: var(--dr-navy);
+  border-radius: 10px;
+  flex-shrink: 0;
 }
+
+/* Large icon tile variant (80px) for agenda-style items */
+.icon-tile-lg {
+  width: 64px;
+  height: 64px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--dr-yellow);
+  color: var(--dr-navy);
+  border-radius: 14px;
+  flex-shrink: 0;
+  font-size: 28px;
+}
+
+/* Outlined capsule pill — yellow variant (dark bg) */
+.pill-yellow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 400;
+  padding: 8px 20px;
+  border: 1px solid var(--dr-yellow);
+  border-radius: 999px;
+  color: var(--dr-yellow);
+  background: transparent;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 150ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  white-space: nowrap;
+}
+.pill-yellow:hover { background: var(--dr-yellow); color: var(--dr-navy); }
+.pill-yellow:active { transform: scale(0.96); }
+
+/* Outlined capsule pill — pink variant (light bg) */
+.pill-pink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 400;
+  padding: 8px 20px;
+  border: 1px solid var(--dr-pink);
+  border-radius: 999px;
+  color: var(--dr-pink);
+  background: transparent;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 150ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  white-space: nowrap;
+}
+.pill-pink:hover { background: var(--dr-pink); color: white; }
+.pill-pink:active { transform: scale(0.96); }
+
+/* Filled CTA pill — pink */
+.btn-pink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 14px 32px;
+  border-radius: 999px;
+  background: var(--dr-pink);
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: all 150ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.btn-pink:hover  { background: var(--dr-pink-deep); }
+.btn-pink:active { transform: scale(0.96); }
+
+/* Filled CTA pill — yellow */
+.btn-yellow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 14px 32px;
+  border-radius: 999px;
+  background: var(--dr-yellow);
+  color: var(--dr-navy);
+  border: none;
+  cursor: pointer;
+  transition: all 150ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.btn-yellow:hover  { background: var(--dr-yellow-soft); }
+.btn-yellow:active { transform: scale(0.96); }
+
+/* Card — light surface (used on cream bg) */
+.card-light {
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: var(--shadow-2);
+}
+
+/* Card — dark surface (used on navy bg) */
+.card-dark {
+  background: var(--dr-navy-2);
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.07);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+
+/* Chip selector — used in AI generator */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.03);
+  color: rgba(255,255,255,0.45);
+  cursor: pointer;
+  transition: all 150ms;
+}
+.chip:hover { border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.7); }
+.chip.selected {
+  background: var(--dr-yellow);
+  border-color: var(--dr-yellow);
+  color: var(--dr-navy);
+}
+
+/* No scrollbar utility */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
