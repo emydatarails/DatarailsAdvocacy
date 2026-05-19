@@ -302,7 +302,7 @@ export default function App() {
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-10">
               {[
                 { step: '01', icon: <FileText size={22} />, title: 'Write your post', desc: 'Publish a LinkedIn post about your real experience with Datarails.' },
-                { step: '02', icon: <ClipboardCheck size={22} />, title: 'Submit the link', desc: 'Paste your URL in our form. We'll review it within 2 business days.' },
+                { step: '02', icon: <ClipboardCheck size={22} />, title: 'Submit the link', desc: "Paste your URL in our form. We'll review it within 2 business days." },
                 { step: '03', icon: <Users size={22} />, title: 'Accept sponsorship', desc: 'We send a sponsorship request to fund the reach of your post.' },
                 { step: '04', icon: <DollarSign size={22} />, title: 'Get paid', desc: 'Receive your $100 reward after accepting the sponsorship request.' },
               ].map((item, i) => (
