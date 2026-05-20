@@ -183,7 +183,7 @@ DO NOT explain what Datarails is or does as a product. Just write about what cha
 HARD REQUIREMENTS:
 - Written in first person ("I") throughout
 - Tag @Datarails naturally inside the post body - woven in, not stapled on at the end
-- Minimum 600 characters total
+- Between 600 and 800 characters total (no more, no less)
 - Zero em-dashes (—). Use commas, colons, semi-colons, or a plain hyphen (-) instead
 - No bracket placeholders like [Your Name] or [Company]
 - 3-4 relevant hashtags at the very end only, if used at all
