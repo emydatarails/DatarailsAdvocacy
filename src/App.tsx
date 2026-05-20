@@ -394,7 +394,7 @@ export default function App() {
         {/* ════════════════════════════════════════
             AMPLIFICATION — dark navy
         ════════════════════════════════════════ */}
-        <section className="py-24 px-6 md:px-12" style={{ background: '#0C142B' }}>
+        <section className="pt-0 pb-12 md:py-24 px-6 md:px-12" style={{ background: '#0C142B' }}>
           <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
             <div>
               <SectionHeader
