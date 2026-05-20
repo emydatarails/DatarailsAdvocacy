@@ -83,6 +83,45 @@ FORMAT RULES FOR THIS STYLE:
 - This is the style for someone who wants to really tell their story.`,
 };
 
+const openingPatterns = [
+  "Open cold, mid-scene. Don't set the stage — drop the reader into a specific moment as if they just walked in.",
+  "Open with a specific number. Hours, versions, tabs, days. Let the number carry the whole weight of before.",
+  "Open with a question your boss or CFO asked — one that used to cause real dread — and answer it in one sentence.",
+  "Open with a task that used to ruin your weekend. Be specific: which day, which recurring nightmare.",
+  "Open with one word or a short fragment. Then pause. Then expand from there slowly.",
+  "Open with a comparison: two versions of the same moment, then vs. now. Keep it tight — two sentences max.",
+  "Open with something a colleague said to you — just the quote, cold, no context yet.",
+  "Open with what you noticed was different. Not the tool. The feeling. The absence of something stressful.",
+  "Open with a physical detail — the relief, the quiet, the Tuesday that felt different from all the others.",
+  "Open with an admission you'd only say to a peer, not a boss. Something vulnerable and real.",
+  "Open with the moment you realized you'd been wrong about something for years.",
+  "Open with a result that surprised even you — lead with the outcome, build backward to the story.",
+];
+
+const postTriggers = [
+  "A colleague on your team asked how you handle deadlines so calmly now. You realized you had an actual answer.",
+  "You just closed the books two days early and found yourself just... sitting with that.",
+  "You saw someone post about spreadsheet chaos and muscle-memory made you type a reply before you stopped yourself.",
+  "A junior analyst said something this morning that made you realize how much the team dynamic has shifted.",
+  "Your CFO asked a scenario question on the fly and you answered it in under a minute. First time that's ever happened.",
+  "It's Sunday afternoon and you're not dreading Monday. You've been trying to figure out how to explain that.",
+  "You were updating your LinkedIn bio and realized your actual job has gotten quieter in ways that matter.",
+  "A board meeting wrapped today and it was the least stressful one you can remember.",
+  "A peer at a different company was venting about a problem you haven't had in months. You felt the urge to say something.",
+  "You were onboarding a new hire and they asked how you do X — and the answer you gave surprised you.",
+];
+
+const writerVoices = [
+  "You're precise and calm. Every sentence earns its place. You understate — the facts do the work.",
+  "You're reflective and honest. You think out loud, admit what you got wrong, and don't wrap things up too neatly.",
+  "You're a slow builder. You set a scene with texture before you get to the point. When the point lands, it lands.",
+  "You're collegial — this is as much about your team as yourself. You can't tell your story without mentioning them.",
+  "You're energized but not breathless. You're still a little surprised by how different things are.",
+  "You're a skeptic at heart. It took a while for you to be convinced. You want the reader to know that.",
+  "You're a leader who zooms out. Results matter, but team dynamics and culture changes matter more to you.",
+  "You write like you talk — natural rhythm, a little dry, occasionally wry. You don't try to sound like a LinkedIn post.",
+];
+
 function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
@@ -97,6 +136,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       req.body;
 
     const archetype = pickRandom(narrativeArchetypes);
+    const openingPattern = pickRandom(openingPatterns);
+    const postTrigger = pickRandom(postTriggers);
+    const writerVoice = pickRandom(writerVoices);
     const styleGuide =
       styleInstructions[style as string] || styleInstructions.professional;
 
@@ -108,8 +150,19 @@ WHO YOU'RE WRITING FOR:
 - What changed: ${keyOutcome}
 - Tone they want: ${style}
 
+THIS PERSON'S VOICE:
+${writerVoice}
+
+WHAT PROMPTED THEM TO WRITE THIS TODAY:
+${postTrigger}
+Use this as invisible context that shapes the post's energy - don't state it literally, just let it inform the feeling behind why they're sharing now.
+
 YOUR NARRATIVE APPROACH FOR THIS POST:
 Use the "${archetype.name}" structure: ${archetype.description}
+
+HOW TO OPEN THIS POST:
+${openingPattern}
+This opening instruction overrides any default you'd reach for. Commit to it fully.
 
 ${styleGuide}
 
@@ -120,9 +173,10 @@ HOW REAL PEOPLE WRITE (follow these closely):
 - Include one small honest moment - a frustration, a doubt, an admission. That's the thing that makes a post feel true instead of polished.
 - Pick ONE specific, concrete scene to anchor the story. Not "meetings were stressful" - more like "I had 40 minutes to build a new scenario before the board call."
 - Vary paragraph length based on the style guide above.
+- Do NOT start with "I was" or "I remember" or "It was" - those are lazy openings. Honor the opening instruction above instead.
 
 WORDS AND PHRASES TO NEVER USE:
-game-changer, revolutionize, synergy, leverage (as a verb), streamline, empower, unlock potential, transform, journey, impactful, robust, cutting-edge, best-in-class, paradigm, holistic
+game-changer, revolutionize, synergy, leverage (as a verb), streamline, empower, unlock potential, transform, journey, impactful, robust, cutting-edge, best-in-class, paradigm, holistic, seamless, effortless
 
 DO NOT explain what Datarails is or does as a product. Just write about what changed for this person and their team.
 
