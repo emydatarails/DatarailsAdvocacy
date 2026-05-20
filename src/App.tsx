@@ -655,7 +655,8 @@ export default function App() {
 
           <div
             style={{
-              display: 'flex', gap: 32, alignItems: 'center',
+              display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center',
+              justifyContent: 'center',
               fontSize: 12, fontWeight: 600,
               letterSpacing: '0.08em', textTransform: 'uppercase',
             }}
@@ -675,7 +676,7 @@ export default function App() {
               style={{
                 color: '#A9AEC2', fontSize: 12, fontWeight: 400,
                 letterSpacing: '0.02em', textTransform: 'none',
-                textDecoration: 'none',
+                textDecoration: 'none', wordBreak: 'break-all',
               }}
             >
               sarah.brown@marketing.datarails.com
@@ -1245,6 +1246,7 @@ function SubmissionForm() {
   return (
     <form
       onSubmit={submit}
+      className="submission-form-wrap submission-form"
       style={{
         background: '#131B36',
         border: '1px solid rgba(255,255,255,0.07)',
@@ -1253,9 +1255,6 @@ function SubmissionForm() {
         textAlign: 'left',
         maxWidth: 680,
         margin: '0 auto',
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: 20,
       }}
     >
       {[

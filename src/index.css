@@ -64,6 +64,8 @@
     text-rendering: optimizeLegibility;
     background: var(--dr-navy);
     color: #ffffff;
+    overflow-x: hidden;
+    max-width: 100%;
   }
 }
 
@@ -315,5 +317,20 @@
   .wizard-step-labels span {
     font-size: 8px;
     letter-spacing: 0.06em;
+  }
+}
+
+/* ─── Submission form — single column on small screens ───────────────────── */
+.submission-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+@media (max-width: 600px) {
+  .submission-form {
+    grid-template-columns: 1fr;
+  }
+  .submission-form-wrap {
+    padding: 28px 20px !important;
   }
 }
