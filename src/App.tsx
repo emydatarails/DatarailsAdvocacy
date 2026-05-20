@@ -508,7 +508,7 @@ export default function App() {
                   border: '1px solid #FFEFD9',
                 }}
               >
-                One thing you don't need to include: financial data, screenshots, or dashboard images.
+                A few things you don't need to include: financial data, screenshots, or dashboard images.
                 We know you work with sensitive information. Your story is what matters, not the numbers.
               </div>
             </div>
