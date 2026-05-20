@@ -501,7 +501,6 @@ export default function App() {
                   padding: '24px 28px',
                   background: '#ffffff',
                   borderRadius: 18,
-                  fontStyle: 'italic',
                   color: '#595959',
                   fontSize: 15,
                   lineHeight: 1.65,
@@ -509,8 +508,8 @@ export default function App() {
                   border: '1px solid #FFEFD9',
                 }}
               >
-                "One thing you don't need to include: financial data, screenshots, or dashboard images.
-                We know you work with sensitive information. Your story is what matters, not the numbers."
+                One thing you don't need to include: financial data, screenshots, or dashboard images.
+                We know you work with sensitive information. Your story is what matters, not the numbers.
               </div>
             </div>
 
