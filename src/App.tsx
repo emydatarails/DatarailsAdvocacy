@@ -314,16 +314,7 @@ export default function App() {
                   style={{ animationDelay: `${i * 0.9}s` }}
                 >
                   {/* Ghost step number */}
-                  <div
-                    style={{
-                      position: 'absolute', top: -20, left: 0,
-                      fontSize: 80, fontWeight: 600, lineHeight: 1,
-                      color: 'rgba(12,20,43,0.04)',
-                      letterSpacing: '-0.02em',
-                      pointerEvents: 'none',
-                      userSelect: 'none',
-                    }}
-                  >
+                  <div className="process-step-ghost">
                     {item.step}.
                   </div>
                   <div className="relative z-10">
@@ -707,6 +698,7 @@ const Chip = ({ label, selected, onClick }: { label: string; selected: boolean; 
 
 // ─── AI Assistant ─────────────────────────────────────────────────────────────
 function AIAssistant() {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading]   = useState(false);
   const [step, setStep]         = useState(0);
   const [direction, setDirection] = useState(1); // 1 = forward, -1 = back
@@ -765,6 +757,7 @@ function AIAssistant() {
   const goTo = (next: number) => {
     setDirection(next > step ? 1 : -1);
     setStep(next);
+    setTimeout(() => containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
   };
 
   const toggle = (field: 'specificMoments' | 'keyOutcomes', value: string) => {
@@ -849,10 +842,10 @@ function AIAssistant() {
   );
 
   return (
-    <div style={{ background: '#131B36', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 28, overflow: 'hidden' }}>
+    <div ref={containerRef} style={{ background: '#131B36', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 28, overflow: 'hidden' }}>
 
       {/* Header bar */}
-      <div style={{ padding: '24px 40px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ padding: '20px clamp(20px, 5vw, 40px)', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#FFA30F', display: 'flex', alignItems: 'center', gap: 8 }}>
           <Sparkles size={14} /> AI Post Generator
         </span>
@@ -862,7 +855,7 @@ function AIAssistant() {
       </div>
 
       {/* Step progress bar */}
-      <div style={{ padding: '32px 40px 0' }}>
+      <div style={{ padding: '28px clamp(20px, 5vw, 40px) 0' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
           {STEPS.map((s, i) => {
             const done    = i < step;
@@ -901,7 +894,7 @@ function AIAssistant() {
         <div style={{ display: 'flex', marginTop: 10 }}>
           {STEPS.map((s, i) => (
             <React.Fragment key={i}>
-              <div style={{ width: 42, textAlign: 'center', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: i === step ? '#FFA30F' : i < step ? '#A9AEC2' : '#3D4460', flexShrink: 0, transition: 'color 250ms' }}>
+              <div style={{ width: 42, textAlign: 'center', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: i === step ? '#FFA30F' : i < step ? '#C4C8D8' : '#7B83A0', flexShrink: 0, transition: 'color 250ms' }}>
                 {s.label}
               </div>
               {i < STEPS.length - 1 && <div style={{ flex: 1 }} />}
@@ -911,7 +904,7 @@ function AIAssistant() {
       </div>
 
       {/* Step heading */}
-      <div style={{ padding: '28px 40px 0' }}>
+      <div style={{ padding: '24px clamp(20px, 5vw, 40px) 0' }}>
         <motion.div
           key={`heading-${step}`}
           initial={{ opacity: 0, y: 8 }}
@@ -924,14 +917,14 @@ function AIAssistant() {
           <h3 style={{ margin: 0, fontSize: 28, fontWeight: 700, color: '#E7E9F1', lineHeight: 1.2, marginBottom: 8 }}>
             {STEPS[step].title}
           </h3>
-          <p style={{ margin: 0, fontSize: 15, color: '#6B7188', lineHeight: 1.6 }}>
+          <p style={{ margin: 0, fontSize: 15, color: '#A9AEC2', lineHeight: 1.6 }}>
             {STEPS[step].subtitle}
           </p>
         </motion.div>
       </div>
 
       {/* Step content */}
-      <div style={{ padding: '28px 40px 0', minHeight: 280 }}>
+      <div style={{ padding: '24px clamp(20px, 5vw, 40px) 0', minHeight: 260 }}>
         <motion.div
           key={`content-${step}`}
           initial={{ opacity: 0, x: direction * 24 }}
@@ -943,7 +936,7 @@ function AIAssistant() {
           {step === 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
               <div>
-                <label style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6B7188', display: 'block', marginBottom: 14 }}>
+                <label style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#9BA3BF', display: 'block', marginBottom: 14 }}>
                   My Role
                 </label>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 14 }}>
@@ -972,7 +965,7 @@ function AIAssistant() {
                 />
               </div>
               <div>
-                <label style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6B7188', display: 'block', marginBottom: 14 }}>
+                <label style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#9BA3BF', display: 'block', marginBottom: 14 }}>
                   Industry
                 </label>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
@@ -1073,7 +1066,7 @@ function AIAssistant() {
       </div>
 
       {/* Navigation footer */}
-      <div style={{ padding: '28px 40px 36px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
+      <div style={{ padding: '24px clamp(20px, 5vw, 40px) 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
         {step > 0 ? (
           <button
             onClick={() => goTo(step - 1)}
@@ -1136,7 +1129,7 @@ function AIAssistant() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
           style={{
-            margin: '0 40px 40px',
+            margin: `0 clamp(16px, 5vw, 40px) 40px`,
             background: '#0C142B',
             border: '1px solid rgba(255,255,255,0.07)',
             borderRadius: 24,
