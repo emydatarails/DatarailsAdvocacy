@@ -281,3 +281,39 @@
   animation: icon-pulse 3.6s ease-in-out infinite;
   border-radius: 10px;
 }
+
+/* Ghost step number (moved to class for responsive control) */
+.process-step-ghost {
+  position: absolute;
+  top: -20px;
+  left: 0;
+  font-size: 80px;
+  font-weight: 600;
+  line-height: 1;
+  color: rgba(12,20,43,0.04);
+  letter-spacing: -0.02em;
+  pointer-events: none;
+  user-select: none;
+}
+
+@media (max-width: 1023px) {
+  /* Push card content below the ghost number to eliminate icon overlap */
+  .process-step {
+    padding-top: 64px;
+  }
+  .process-step-ghost {
+    font-size: 60px;
+    top: -4px;
+  }
+}
+
+/* ─── Wizard responsive horizontal padding ────────────────────────────────── */
+.wizard-step-labels span {
+  font-size: 9px;
+}
+@media (max-width: 479px) {
+  .wizard-step-labels span {
+    font-size: 8px;
+    letter-spacing: 0.06em;
+  }
+}
