@@ -2,6 +2,7 @@ import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
+import { google } from "googleapis";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -154,9 +155,36 @@ HARD REQUIREMENTS:
   }
 });
 
-app.post("/api/submit-post", (req, res) => {
-  // In a real app, this would save to a database
+async function appendToSheet(row: string[]) {
+  const auth = new google.auth.GoogleAuth({
+    credentials: {
+      client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+      private_key: process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+    },
+    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+  });
+
+  const sheets = google.sheets({ version: "v4", auth });
+  await sheets.spreadsheets.values.append({
+    spreadsheetId: process.env.GOOGLE_SHEETS_SPREADSHEET_ID,
+    range: "Sheet1",
+    valueInputOption: "USER_ENTERED",
+    requestBody: { values: [row] },
+  });
+}
+
+app.post("/api/submit-post", async (req, res) => {
+  const { fullName, email, company, title, postUrl } = req.body;
+  const timestamp = new Date().toISOString();
+
   console.log("Form Submission Received:", req.body);
+
+  try {
+    await appendToSheet([timestamp, fullName, email, company, title, postUrl]);
+  } catch (err) {
+    console.error("Google Sheets write failed:", err);
+  }
+
   res.json({ success: true, message: "Post submitted successfully! We'll review it within 2 business days." });
 });
 
