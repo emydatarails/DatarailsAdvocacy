@@ -723,7 +723,7 @@ function AIAssistant() {
     'Manual consolidation from multiple systems',
     'Errors found in critical board reports',
     'Dreading unexpected CFO questions',
-    '2-hour notice for budget scenarios',
+    'Last minute notice for budget scenarios',
     'Spreadsheet version control nightmares',
   ];
   const outcomeDefs = [
@@ -1060,6 +1060,8 @@ function AIAssistant() {
                       <span>{liveLabel}</span>
                     </span>
                     {selected && def.defaultMetric && (
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: '#FFA30F', letterSpacing: '0.08em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>Custom number</span>
                       <input
                         type="text"
                         value={outcomeMetrics[def.label] ?? def.defaultMetric}
@@ -1079,6 +1081,7 @@ function AIAssistant() {
                           outline: 'none',
                         }}
                       />
+                      </span>
                     )}
                   </div>
                 );
