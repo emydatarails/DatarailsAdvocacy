@@ -710,6 +710,7 @@ function AIAssistant() {
     keyOutcomes: [] as string[],
   });
   const [customMoment, setCustomMoment] = useState('');
+  const [customOutcome, setCustomOutcome] = useState('');
   const [customIndustry, setCustomIndustry] = useState('');
   const [customProfession, setCustomProfession] = useState('');
   const [outcomeMetrics, setOutcomeMetrics] = useState<Record<string, string>>({});
@@ -718,7 +719,7 @@ function AIAssistant() {
   const professions = ['FP&A Manager', 'Controller', 'CFO', 'Finance Director', 'VP Finance', 'Finance Analyst'];
   const industries  = ['SaaS', 'Manufacturing', 'Healthcare', 'Retail', 'Services', 'Real Estate'];
   const moments = [
-    'Month-end close taking 10+ days',
+    'Month-end close taking multiple days',
     'Manual consolidation from multiple systems',
     'Errors found in critical board reports',
     'Dreading unexpected CFO questions',
@@ -790,7 +791,7 @@ function AIAssistant() {
         profession: formData.profession === 'Other' ? customProfession : formData.profession,
         industry: formData.industry === 'Other' ? customIndustry : formData.industry,
         specificMoment: [...formData.specificMoments, customMoment].filter(Boolean).join(', '),
-        keyOutcome: resolvedOutcomes.join(', '),
+        keyOutcome: [...resolvedOutcomes, customOutcome].filter(Boolean).join(', '),
       };
       const response = await fetch('/api/generate-post', {
         method: 'POST',
@@ -1014,6 +1015,9 @@ function AIAssistant() {
           {/* ── Step 1: Moment ── */}
           {step === 1 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#FFA30F', marginBottom: 2 }}>
+                Pick up to 3
+              </div>
               {moments.map(m => (
                 <button key={m} type="button" onClick={() => toggle('specificMoments', m)} style={optionRowStyle(formData.specificMoments.includes(m))}>
                   {checkIcon(formData.specificMoments.includes(m))}
@@ -1033,29 +1037,59 @@ function AIAssistant() {
           {/* ── Step 2: Outcome ── */}
           {step === 2 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#FFA30F', marginBottom: 2 }}>
+                Pick up to 3
+              </div>
               {outcomeDefs.map(def => {
                 const selected = formData.keyOutcomes.includes(def.label);
+                const liveLabel = def.before
+                  ? `${def.before}${outcomeMetrics[def.label] ?? def.defaultMetric}${def.after}`
+                  : def.label;
                 return (
-                  <div key={def.label}>
-                    <button type="button" onClick={() => toggle('keyOutcomes', def.label)} style={optionRowStyle(selected)}>
+                  <div
+                    key={def.label}
+                    onClick={() => toggle('keyOutcomes', def.label)}
+                    style={{
+                      ...optionRowStyle(selected),
+                      justifyContent: 'space-between',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
                       {checkIcon(selected)}
-                      {def.label}
-                    </button>
+                      <span>{liveLabel}</span>
+                    </span>
                     {selected && def.defaultMetric && (
-                      <div style={{ marginTop: 6, marginLeft: 34, display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <span style={{ fontSize: 12, color: '#9BA3BF', fontWeight: 600, whiteSpace: 'nowrap' }}>Your number:</span>
-                        <input
-                          type="text"
-                          value={outcomeMetrics[def.label] ?? def.defaultMetric}
-                          onChange={e => setOutcomeMetrics(prev => ({ ...prev, [def.label]: e.target.value }))}
-                          onClick={e => e.stopPropagation()}
-                          style={{ ...inputStyle, padding: '8px 14px', fontSize: 14, width: 120 }}
-                        />
-                      </div>
+                      <input
+                        type="text"
+                        value={outcomeMetrics[def.label] ?? def.defaultMetric}
+                        onChange={e => setOutcomeMetrics(prev => ({ ...prev, [def.label]: e.target.value }))}
+                        onClick={e => e.stopPropagation()}
+                        style={{
+                          background: 'rgba(255,255,255,0.08)',
+                          border: '1px solid rgba(255,163,15,0.5)',
+                          borderRadius: 8,
+                          padding: '6px 12px',
+                          fontSize: 14,
+                          width: 90,
+                          flexShrink: 0,
+                          color: '#FFA30F',
+                          fontFamily: 'var(--font-sans)',
+                          fontWeight: 700,
+                          outline: 'none',
+                        }}
+                      />
                     )}
                   </div>
                 );
               })}
+              <textarea
+                rows={2}
+                placeholder="Or describe your own outcome..."
+                value={customOutcome}
+                onChange={e => setCustomOutcome(e.target.value)}
+                style={{ ...inputStyle, resize: 'none', marginTop: 6 }}
+              />
             </div>
           )}
 
