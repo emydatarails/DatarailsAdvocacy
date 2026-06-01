@@ -990,9 +990,9 @@ function AIAssistant() {
                       style={{
                         padding: '12px 20px', borderRadius: 12, fontSize: 15, fontWeight: 600,
                         cursor: 'pointer', border: '1px solid', transition: 'all 180ms',
-                        background: formData.industry === ind ? 'rgba(255,163,15,0.12)' : 'rgba(255,255,255,0.04)',
+                        background: formData.industry === ind ? '#FFA30F' : 'rgba(255,255,255,0.04)',
                         borderColor: formData.industry === ind ? '#FFA30F' : 'rgba(255,255,255,0.1)',
-                        color: formData.industry === ind ? '#FFA30F' : '#C4C8D8',
+                        color: formData.industry === ind ? '#0C142B' : '#C4C8D8',
                       }}
                     >
                       {ind}
