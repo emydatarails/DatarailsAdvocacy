@@ -710,6 +710,8 @@ function AIAssistant() {
     keyOutcomes: [] as string[],
   });
   const [customMoment, setCustomMoment] = useState('');
+  const [customIndustry, setCustomIndustry] = useState('');
+  const [outcomeMetrics, setOutcomeMetrics] = useState<Record<string, string>>({});
   const [generatedPost, setGeneratedPost] = useState('');
 
   const professions = ['FP&A Manager', 'Controller', 'CFO', 'Finance Director', 'VP Finance', 'Finance Analyst'];
@@ -722,13 +724,13 @@ function AIAssistant() {
     '2-hour notice for budget scenarios',
     'Spreadsheet version control nightmares',
   ];
-  const outcomes = [
-    'Saved 50% time on month-end close',
-    'Real-time visibility for leadership',
-    'Automated 90% of data consolidation',
-    'Improved forecast accuracy by 25%',
-    'Faster, self-service board reporting',
-    'Replaced 50+ manual spreadsheets',
+  const outcomeDefs = [
+    { label: 'Saved 50% time on month-end close', before: 'Saved ', defaultMetric: '50%', after: ' time on month-end close' },
+    { label: 'Real-time visibility for leadership', before: null, defaultMetric: null, after: null },
+    { label: 'Automated 90% of data consolidation', before: 'Automated ', defaultMetric: '90%', after: ' of data consolidation' },
+    { label: 'Improved forecast accuracy by 25%', before: 'Improved forecast accuracy by ', defaultMetric: '25%', after: '' },
+    { label: 'Faster, self-service board reporting', before: null, defaultMetric: null, after: null },
+    { label: 'Replaced 50+ manual spreadsheets', before: 'Replaced ', defaultMetric: '50+', after: ' manual spreadsheets' },
   ];
 
   const STEPS = [
@@ -740,12 +742,12 @@ function AIAssistant() {
     {
       label: 'Moment',
       title: 'What was the pain?',
-      subtitle: 'Pick the frustrations you experienced before Datarails. Choose up to 3.',
+      subtitle: 'Pick the frustrations you experienced before Datarails — select any that apply.',
     },
     {
       label: 'Outcome',
       title: 'What changed?',
-      subtitle: 'Select the wins you achieved after using Datarails. Choose up to 3.',
+      subtitle: 'Select the wins you achieved after using Datarails — pick the relevant ones.',
     },
     {
       label: 'Tone',
@@ -776,10 +778,17 @@ function AIAssistant() {
     }
     setLoading(true);
     try {
+      const resolvedOutcomes = formData.keyOutcomes.map(label => {
+        const def = outcomeDefs.find(o => o.label === label);
+        if (!def?.before) return label;
+        const metric = outcomeMetrics[label] ?? def.defaultMetric;
+        return `${def.before}${metric}${def.after}`;
+      });
       const payload = {
         ...formData,
+        industry: formData.industry === 'Other' ? customIndustry : formData.industry,
         specificMoment: [...formData.specificMoments, customMoment].filter(Boolean).join(', '),
-        keyOutcome: formData.keyOutcomes.join(', '),
+        keyOutcome: resolvedOutcomes.join(', '),
       };
       const response = await fetch('/api/generate-post', {
         method: 'POST',
@@ -847,7 +856,7 @@ function AIAssistant() {
       {/* Header bar */}
       <div style={{ padding: '20px clamp(20px, 5vw, 40px)', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#FFA30F', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Sparkles size={14} /> AI Post Generator
+          <Sparkles size={14} /> AI Writing Assistant
         </span>
         <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6B7188', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', padding: '4px 10px', borderRadius: 6 }}>
           Beta
@@ -968,8 +977,8 @@ function AIAssistant() {
                 <label style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#9BA3BF', display: 'block', marginBottom: 14 }}>
                   Industry
                 </label>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-                  {industries.map(ind => (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 14 }}>
+                  {[...industries, 'Other'].map(ind => (
                     <button
                       key={ind}
                       onClick={() => setFormData({ ...formData, industry: ind })}
@@ -985,6 +994,15 @@ function AIAssistant() {
                     </button>
                   ))}
                 </div>
+                {formData.industry === 'Other' && (
+                  <input
+                    type="text"
+                    placeholder="Enter your industry..."
+                    value={customIndustry}
+                    onChange={e => setCustomIndustry(e.target.value)}
+                    style={inputStyle}
+                  />
+                )}
               </div>
             </div>
           )}
@@ -992,11 +1010,6 @@ function AIAssistant() {
           {/* ── Step 1: Moment ── */}
           {step === 1 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 2 }}>
-                <span style={{ fontSize: 13, color: '#FFA30F', fontWeight: 700 }}>
-                  {formData.specificMoments.length} / 3 selected
-                </span>
-              </div>
               {moments.map(m => (
                 <button key={m} type="button" onClick={() => toggle('specificMoments', m)} style={optionRowStyle(formData.specificMoments.includes(m))}>
                   {checkIcon(formData.specificMoments.includes(m))}
@@ -1016,17 +1029,29 @@ function AIAssistant() {
           {/* ── Step 2: Outcome ── */}
           {step === 2 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 2 }}>
-                <span style={{ fontSize: 13, color: '#FFA30F', fontWeight: 700 }}>
-                  {formData.keyOutcomes.length} / 3 selected
-                </span>
-              </div>
-              {outcomes.map(o => (
-                <button key={o} type="button" onClick={() => toggle('keyOutcomes', o)} style={optionRowStyle(formData.keyOutcomes.includes(o))}>
-                  {checkIcon(formData.keyOutcomes.includes(o))}
-                  {o}
-                </button>
-              ))}
+              {outcomeDefs.map(def => {
+                const selected = formData.keyOutcomes.includes(def.label);
+                return (
+                  <div key={def.label}>
+                    <button type="button" onClick={() => toggle('keyOutcomes', def.label)} style={optionRowStyle(selected)}>
+                      {checkIcon(selected)}
+                      {def.label}
+                    </button>
+                    {selected && def.defaultMetric && (
+                      <div style={{ marginTop: 6, marginLeft: 34, display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span style={{ fontSize: 12, color: '#9BA3BF', fontWeight: 600, whiteSpace: 'nowrap' }}>Your number:</span>
+                        <input
+                          type="text"
+                          value={outcomeMetrics[def.label] ?? def.defaultMetric}
+                          onChange={e => setOutcomeMetrics(prev => ({ ...prev, [def.label]: e.target.value }))}
+                          onClick={e => e.stopPropagation()}
+                          style={{ ...inputStyle, padding: '8px 14px', fontSize: 14, width: 120 }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
 
@@ -1121,6 +1146,11 @@ function AIAssistant() {
           </button>
         )}
       </div>
+      {!generatedPost && (
+        <p style={{ textAlign: 'right', padding: '0 clamp(20px, 5vw, 40px) 24px', fontSize: 12, color: '#6B7188', margin: 0 }}>
+          This may take a minute or two — please don't refresh the page.
+        </p>
+      )}
 
       {/* Generated post output */}
       {generatedPost && (
@@ -1138,7 +1168,7 @@ function AIAssistant() {
           }}
         >
           <div style={{ position: 'absolute', top: -14, left: 28, background: '#FA3576', color: '#fff', padding: '5px 16px', borderRadius: 999, fontSize: 10, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
-            Datarails AI Draft
+            Post Draft
           </div>
           <div style={{ fontSize: 15, lineHeight: 1.8, color: '#E7E9F1', whiteSpace: 'pre-wrap', marginBottom: 24, fontWeight: 400 }}>
             {generatedPost}
@@ -1150,7 +1180,7 @@ function AIAssistant() {
               onMouseOver={e => (e.currentTarget.style.background = '#E7E9F1')}
               onMouseOut={e => (e.currentTarget.style.background = '#ffffff')}
             >
-              Copy Post <ClipboardCheck size={16} />
+              Copy Text <ClipboardCheck size={16} />
             </button>
             <button
               onClick={generate}
