@@ -711,6 +711,7 @@ function AIAssistant() {
   });
   const [customMoment, setCustomMoment] = useState('');
   const [customIndustry, setCustomIndustry] = useState('');
+  const [customProfession, setCustomProfession] = useState('');
   const [outcomeMetrics, setOutcomeMetrics] = useState<Record<string, string>>({});
   const [generatedPost, setGeneratedPost] = useState('');
 
@@ -786,6 +787,7 @@ function AIAssistant() {
       });
       const payload = {
         ...formData,
+        profession: formData.profession === 'Other' ? customProfession : formData.profession,
         industry: formData.industry === 'Other' ? customIndustry : formData.industry,
         specificMoment: [...formData.specificMoments, customMoment].filter(Boolean).join(', '),
         keyOutcome: resolvedOutcomes.join(', '),
@@ -949,7 +951,7 @@ function AIAssistant() {
                   My Role
                 </label>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 14 }}>
-                  {professions.map(p => (
+                  {[...professions, 'Other'].map(p => (
                     <button
                       key={p}
                       onClick={() => setFormData({ ...formData, profession: p })}
@@ -965,13 +967,15 @@ function AIAssistant() {
                     </button>
                   ))}
                 </div>
-                <input
-                  type="text"
-                  placeholder="Or type your role..."
-                  value={formData.profession}
-                  onChange={e => setFormData({ ...formData, profession: e.target.value })}
-                  style={inputStyle}
-                />
+                {formData.profession === 'Other' && (
+                  <input
+                    type="text"
+                    placeholder="Enter your role..."
+                    value={customProfession}
+                    onChange={e => setCustomProfession(e.target.value)}
+                    style={inputStyle}
+                  />
+                )}
               </div>
               <div>
                 <label style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#9BA3BF', display: 'block', marginBottom: 14 }}>
