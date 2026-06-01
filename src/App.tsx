@@ -1148,7 +1148,7 @@ function AIAssistant() {
       </div>
       {!generatedPost && (
         <p style={{ textAlign: 'right', padding: '0 clamp(20px, 5vw, 40px) 24px', fontSize: 12, color: '#6B7188', margin: 0 }}>
-          This may take a minute or two — please don't refresh the page.
+          Good writing takes time. Even AI needs a moment to find the right words ✍️
         </p>
       )}
 
