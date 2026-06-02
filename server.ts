@@ -147,7 +147,97 @@ HARD REQUIREMENTS:
       contents: prompt,
     });
 
-    const text = response.text || "Failed to generate post.";
+    const draft = response.text || "";
+    if (!draft) {
+      return res.json({ post: "Failed to generate post." });
+    }
+
+    // Humanization pass — 8-pass editing process based on the humanize-writing skill
+    const humanizePrompt = `You are an expert editor who specializes in detecting and removing AI writing patterns. You've been given a LinkedIn post draft. Rewrite it so it sounds like a real finance professional typed it themselves — not a language model, not a PR team.
+
+AI writing has a recognizable smell: predictable structure, hedge-then-assert phrasing, relentless parallelism, significance inflation, and a tendency to wrap everything in a tidy bow. Human writing is messier, more opinionated, and varies in rhythm. Your job is not to dumb it down — it's to make it sound like it came from someone who actually lived this and has opinions about it.
+
+DRAFT TO EDIT:
+${draft}
+
+Run all 8 passes below, in order. Only change what each pass targets.
+
+--- PASS 1: KILL STRUCTURE TELLS ---
+LinkedIn posts can still be formulaic. Look for:
+- Every paragraph following the same shape (setup, point, mini-conclusion)
+- A tidy "what this means" wrapper at the end that sounds like a press release
+- Perfectly balanced before/after contrasts that feel engineered, not remembered
+Fix: Let some thoughts end abruptly. Not everything needs a bow on it. If the conclusion feels like a bumper sticker, cut it or make it more specific.
+
+--- PASS 2: STRIP SIGNIFICANCE INFLATION ---
+Delete or replace any of these patterns:
+- "stands/serves as a testament to", "a vital/significant/crucial/pivotal role/moment"
+- "underscores/highlights its importance", "reflects broader", "setting the stage for"
+- "marking/shaping the", "represents a shift", "key turning point", "evolving landscape"
+- "indelible mark", "deeply rooted", "commitment to"
+- Promotional puffery: "vibrant", "profound", "nestled", "in the heart of", "groundbreaking", "renowned"
+The fix is NOT a synonym. Replace with a specific fact, or delete entirely.
+
+--- PASS 3: REPLACE AI VOCABULARY ---
+TIER 1 — immediate red flags, always replace:
+delve, landscape (metaphorical), tapestry, paradigm shift, leverage (verb), harness, navigate (metaphorical), realm, embark on a journey, myriad, plethora, multifaceted, groundbreaking, revolutionize, synergy, ecosystem (non-technical), resonate, streamline, testament, enduring
+
+TIER 2 — replace if 3+ appear in this short post:
+robust, seamless, cutting-edge, innovative, comprehensive, pivotal, nuanced, compelling, transformative, bolster, underscore, evolving, fostering, imperative, intricate, overarching, unprecedented, vibrant, profound, renowned, showcasing, exemplifies, garner, valuable
+
+The fix is often NOT a synonym — restructure the sentence.
+
+--- PASS 4: FIX GRAMMAR-LEVEL PATTERNS ---
+Copula avoidance: if "serves as", "stands as", "represents", "boasts", "features" are clustering (used more than once), replace with "is"/"are"/"has".
+Superficial -ing phrases: delete tacked-on participle phrases like "highlighting the importance of...", "underscoring the need for...", "reflecting the broader trend...", "showcasing how...", "contributing to..." — or expand them into their own sentence.
+Negative parallelisms: "It's not just about X, it's about Y" — fine once, AI uses it like punctuation. Cut extras.
+Synonym cycling: if the post uses different words for the same concept ("change... shift... evolution... transition" all in one short post), pick the best one and stick with it.
+
+--- PASS 5: FIX RHYTHM AND STYLE ---
+AI writes in metronomic cadence: medium sentence, medium sentence, medium sentence. Fix this hard.
+- Add short punchy sentences (under 8 words). "That changed." "It works." "Not anymore."
+- Let some sentences run longer when the idea needs room.
+- Start some sentences with "But," "And," "So," or "Look," — humans do this.
+- Use fragments occasionally if the context is informal.
+- Count em-dashes: if any remain in the draft, replace them with commas, colons, or a plain hyphen.
+
+--- PASS 6: CUT HEDGING, FILLER, AND VAGUE ATTRIBUTIONS ---
+Remove:
+- "It's worth noting that..." / "It's important to note..." → just state the thing
+- "While there are certainly..." / "To be sure..." / "That said..." → pick a side or delete
+- "In order to" → "To" | "Due to the fact that" → "Because" | "Has the ability to" → "Can"
+- Generic positive closers: "The future looks bright", "Exciting times lie ahead", "Only time will tell"
+Just say the thing. One hedge per post is fine. Three is AI.
+
+--- PASS 7: FIX CONNECTIVE TISSUE ---
+Replace or remove AI's favorite transitions:
+- "Moreover" / "Furthermore" / "Additionally" → drop entirely or use "And" / "But" / "So"
+- "In conclusion" / "To sum up" → just start the final thought
+- "That being said" / "With that in mind" / "Moving forward" / "When it comes to" → cut or rewrite
+Often you don't need a transition at all. Let paragraph breaks do the work.
+
+--- PASS 8: ADD HUMAN TEXTURE AND SOUL ---
+Sterile, clean writing is still obviously AI. Add:
+- At least one opinion or reaction — not neutral reporting, a perspective. "I genuinely didn't think it would matter this much." "Turns out I was wrong."
+- One moment of lived texture — something specific and slightly informal. A day. A feeling. A detail that only someone who was there would mention.
+- Vary the voice: a dry observation, a blunt statement after a complex one, one sentence that sounds like something you'd say out loud.
+Do NOT overdo it. One or two human touches per short post is enough. Don't add slang or try to be hip.
+
+--- HARD REQUIREMENTS (preserve exactly, no exceptions) ---
+- First person ("I") throughout
+- @Datarails tag must stay in the body, exactly where it is — do not move it to the end
+- Total character count must stay between 600 and 800 characters (count carefully)
+- Zero em-dashes (—) anywhere — use commas, colons, semi-colons, or a plain hyphen (-) instead
+- No bracket placeholders like [Name] or [Company]
+- Hashtags stay at the very end only, exactly as they appear in the draft
+- Return ONLY the final post text. No "Here is the revised version:", no commentary, no explanation.`.trim();
+
+    const humanized = await genAI.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: humanizePrompt,
+    });
+
+    const text = humanized.text || draft;
     res.json({ post: text });
   } catch (error) {
     console.error("Gemini Error:", error);
