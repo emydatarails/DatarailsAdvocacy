@@ -926,7 +926,7 @@ function AIAssistant() {
             fontWeight: 400,
             fontFamily: 'var(--font-sans)',
             textAlign: 'center',
-            maxWidth: 300,
+            maxWidth: 400,
             lineHeight: 1.6,
             margin: '-16px 0 0',
             letterSpacing: '0.01em',
