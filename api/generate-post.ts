@@ -194,7 +194,40 @@ HARD REQUIREMENTS:
       contents: prompt,
     });
 
-    const text = response.text || "Failed to generate post.";
+    const draft = response.text || "";
+    if (!draft) {
+      return res.json({ post: "Failed to generate post." });
+    }
+
+    // Humanization pass: strip AI patterns and make it sound like a real person wrote it
+    const humanizePrompt = `You are a writing editor. You've been given a LinkedIn post draft written by AI. Your job is to make it sound like a real person typed it, not a language model or a PR team.
+
+DRAFT:
+${draft}
+
+YOUR EDITS:
+- Break up any sentences that feel too symmetrical or balanced (AI loves parallel structures, humans don't)
+- Rephrase anything that sounds like someone trying to sound thoughtful rather than actually being thoughtful
+- Vary the rhythm harder: mix very short punchy sentences with longer, slightly meandering ones
+- Fix any consecutive sentences that start with the same word or share the same rhythm pattern
+- Remove or replace any of these words if present: navigate, foster, pivotal, crucial, vital, thrive, resonate, meaningful, valuable, space (used as industry/work context)
+- Make it feel like the person wrote this in one sitting, for themselves, not for an audience
+
+HARD REQUIREMENTS (do not change any of these):
+- First person ("I") throughout
+- @Datarails tag stays exactly where it is in the body
+- Total character count stays between 600 and 800 characters
+- Zero em-dashes (—) - use commas, colons, semi-colons, or a plain hyphen (-) instead
+- No bracket placeholders
+- Hashtags stay at the very end only, unchanged
+- Return ONLY the final post text. No commentary, no preamble, no explanation.`.trim();
+
+    const humanized = await genAI.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: humanizePrompt,
+    });
+
+    const text = humanized.text || draft;
     res.json({ post: text });
   } catch (error) {
     console.error("Gemini Error:", error);
