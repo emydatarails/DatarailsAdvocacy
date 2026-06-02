@@ -856,6 +856,113 @@ function AIAssistant() {
   return (
     <div ref={containerRef} style={{ background: '#131B36', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 28, overflow: 'hidden' }}>
 
+      {/* Feather pen loading overlay */}
+      {loading && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 9999,
+          background: 'rgba(10, 15, 35, 0.93)',
+          backdropFilter: 'blur(14px)',
+          WebkitBackdropFilter: 'blur(14px)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 36,
+          animation: 'overlayFadeIn 0.4s ease-out',
+        }}>
+          {/* Pen + glow */}
+          <div style={{ position: 'relative', width: 180, height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{
+              position: 'absolute',
+              width: 130,
+              height: 130,
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(255,163,15,0.18) 0%, transparent 70%)',
+              animation: 'glowPulse 2s ease-in-out infinite',
+            }} />
+            <div style={{
+              animation: 'featherWrite 1.9s ease-in-out infinite',
+              transformOrigin: '50% 90%',
+              filter: 'drop-shadow(0 6px 20px rgba(255,163,15,0.4))',
+            }}>
+              <svg width="88" height="168" viewBox="0 0 88 168" fill="none">
+                <defs>
+                  <linearGradient id="fgMain" x1="44" y1="0" x2="44" y2="148" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="#FFE566"/>
+                    <stop offset="45%" stopColor="#FFA30F"/>
+                    <stop offset="100%" stopColor="#D97000"/>
+                  </linearGradient>
+                  <linearGradient id="fgNib" x1="44" y1="140" x2="44" y2="168" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="#CCCCCC"/>
+                    <stop offset="100%" stopColor="#888888"/>
+                  </linearGradient>
+                </defs>
+                {/* Outer feather body */}
+                <path d="M44 6 C60 12, 80 30, 79 58 C78 80, 66 98, 54 130 L44 150 L34 130 C22 98, 10 80, 9 58 C8 30, 28 12, 44 6Z" fill="url(#fgMain)"/>
+                {/* Inner sheen */}
+                <path d="M44 14 C56 19, 70 34, 70 58 C69 76, 59 92, 50 122 L44 140 L38 122 C29 92, 19 76, 18 58 C18 34, 32 19, 44 14Z" fill="rgba(255,245,190,0.22)"/>
+                {/* Barbs right */}
+                {[18,30,42,54,66,80,94].map((y, i) => (
+                  <line key={`r${i}`} x1="44" y1={y} x2={Math.min(79, 44 + (y < 58 ? (y/58)*34 : Math.max(4,(100-y)/42*22)))} y2={y+9} stroke="rgba(255,205,70,0.38)" strokeWidth="0.9" strokeLinecap="round"/>
+                ))}
+                {/* Barbs left */}
+                {[18,30,42,54,66,80,94].map((y, i) => (
+                  <line key={`l${i}`} x1="44" y1={y} x2={Math.max(9, 44 - (y < 58 ? (y/58)*34 : Math.max(4,(100-y)/42*22)))} y2={y+9} stroke="rgba(255,205,70,0.38)" strokeWidth="0.9" strokeLinecap="round"/>
+                ))}
+                {/* Central rib */}
+                <path d="M44 6 Q44 80 44 150" stroke="rgba(150,85,0,0.45)" strokeWidth="1.6" fill="none" strokeLinecap="round"/>
+                {/* Nib */}
+                <path d="M44 146 L39 168 L44 161 L49 168 Z" fill="url(#fgNib)"/>
+                <line x1="44" y1="154" x2="44" y2="168" stroke="rgba(100,100,100,0.55)" strokeWidth="0.7"/>
+              </svg>
+            </div>
+          </div>
+
+          {/* Animated ink lines */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: 220 }}>
+            {[0, 1, 2].map(i => (
+              <div key={i} style={{
+                height: 2,
+                background: 'linear-gradient(90deg, #FFA30F 0%, rgba(255,163,15,0.08) 100%)',
+                borderRadius: 2,
+                animation: `inkLine 1.9s ease-in-out ${i * 0.32}s infinite`,
+                transformOrigin: 'left center',
+              }}/>
+            ))}
+          </div>
+
+          {/* Label */}
+          <p style={{
+            color: '#E7E9F1',
+            fontSize: 17,
+            fontWeight: 500,
+            fontFamily: 'var(--font-sans)',
+            textAlign: 'center',
+            maxWidth: 360,
+            lineHeight: 1.65,
+            margin: 0,
+            letterSpacing: '-0.01em',
+          }}>
+            Writing your personal draft and making sure it's awesome
+          </p>
+
+          {/* Bouncing dots */}
+          <div style={{ display: 'flex', gap: 8 }}>
+            {[0, 1, 2].map(i => (
+              <div key={i} style={{
+                width: 7,
+                height: 7,
+                borderRadius: '50%',
+                background: '#FFA30F',
+                animation: `dotBounce 1.2s ease-in-out ${i * 0.2}s infinite`,
+              }}/>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Header bar */}
       <div style={{ padding: '20px clamp(20px, 5vw, 40px)', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#FFA30F', display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -1237,7 +1344,31 @@ function AIAssistant() {
         </motion.div>
       )}
 
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes overlayFadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes featherWrite {
+          0%, 100% { transform: rotate(-28deg) translate(0px, 0px); }
+          15%       { transform: rotate(-24deg) translate(7px, 3px); }
+          35%       { transform: rotate(-32deg) translate(-3px, 1px); }
+          55%       { transform: rotate(-25deg) translate(9px, 4px); }
+          75%       { transform: rotate(-30deg) translate(2px, 1px); }
+        }
+        @keyframes glowPulse {
+          0%, 100% { opacity: 0.55; transform: scale(1); }
+          50%       { opacity: 1;    transform: scale(1.18); }
+        }
+        @keyframes inkLine {
+          0%        { transform: scaleX(0);   opacity: 0; }
+          25%       { opacity: 1; }
+          70%       { transform: scaleX(1);   opacity: 0.75; }
+          100%      { transform: scaleX(0);   opacity: 0; }
+        }
+        @keyframes dotBounce {
+          0%, 80%, 100% { transform: translateY(0);   opacity: 0.45; }
+          40%            { transform: translateY(-9px); opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }
