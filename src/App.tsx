@@ -727,12 +727,12 @@ function AIAssistant() {
     'Spreadsheet version control nightmares',
   ];
   const outcomeDefs = [
-    { label: 'Saved 50% time on month-end close', before: 'Saved ', defaultMetric: '50%', after: ' time on month-end close' },
-    { label: 'Real-time visibility for leadership', before: null, defaultMetric: null, after: null },
-    { label: 'Automated 90% of data consolidation', before: 'Automated ', defaultMetric: '90%', after: ' of data consolidation' },
-    { label: 'Improved forecast accuracy by 25%', before: 'Improved forecast accuracy by ', defaultMetric: '25%', after: '' },
-    { label: 'Faster, self-service board reporting', before: null, defaultMetric: null, after: null },
-    { label: 'Replaced 50+ manual spreadsheets', before: 'Replaced ', defaultMetric: '50+', after: ' manual spreadsheets' },
+    { label: 'Saved 50% time on month-end close', before: 'Saved ', defaultMetric: '50', suffix: '%', after: ' time on month-end close' },
+    { label: 'Real-time visibility for leadership', before: null, defaultMetric: null, suffix: null, after: null },
+    { label: 'Automated 90% of data consolidation', before: 'Automated ', defaultMetric: '90', suffix: '%', after: ' of data consolidation' },
+    { label: 'Improved forecast accuracy by 25%', before: 'Improved forecast accuracy by ', defaultMetric: '25', suffix: '%', after: '' },
+    { label: 'Faster, self-service board reporting', before: null, defaultMetric: null, suffix: null, after: null },
+    { label: 'Replaced 50+ manual spreadsheets', before: 'Replaced ', defaultMetric: '50', suffix: '+', after: ' manual spreadsheets' },
   ];
 
   const STEPS = [
@@ -784,7 +784,7 @@ function AIAssistant() {
         const def = outcomeDefs.find(o => o.label === label);
         if (!def?.before) return label;
         const metric = outcomeMetrics[label] ?? def.defaultMetric;
-        return `${def.before}${metric}${def.after}`;
+        return `${def.before}${metric}${def.suffix ?? ''}${def.after}`;
       });
       const payload = {
         ...formData,
@@ -926,7 +926,7 @@ function AIAssistant() {
             fontWeight: 400,
             fontFamily: 'var(--font-sans)',
             textAlign: 'center',
-            maxWidth: 300,
+            maxWidth: 400,
             lineHeight: 1.6,
             margin: '-16px 0 0',
             letterSpacing: '0.01em',
@@ -1136,7 +1136,7 @@ function AIAssistant() {
               {outcomeDefs.map(def => {
                 const selected = formData.keyOutcomes.includes(def.label);
                 const liveLabel = def.before
-                  ? `${def.before}${outcomeMetrics[def.label] ?? def.defaultMetric}${def.after}`
+                  ? `${def.before}${outcomeMetrics[def.label] ?? def.defaultMetric}${def.suffix ?? ''}${def.after}`
                   : def.label;
                 return (
                   <div
@@ -1155,25 +1155,38 @@ function AIAssistant() {
                     {selected && def.defaultMetric && (
                       <span style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
                         <span style={{ fontSize: 11, fontWeight: 600, color: '#FFA30F', letterSpacing: '0.08em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>Custom number</span>
-                      <input
-                        type="text"
-                        value={outcomeMetrics[def.label] ?? def.defaultMetric}
-                        onChange={e => setOutcomeMetrics(prev => ({ ...prev, [def.label]: e.target.value }))}
-                        onClick={e => e.stopPropagation()}
-                        style={{
-                          background: 'rgba(255,255,255,0.08)',
-                          border: '1px solid rgba(255,163,15,0.5)',
-                          borderRadius: 8,
-                          padding: '6px 12px',
-                          fontSize: 14,
-                          width: 90,
-                          flexShrink: 0,
-                          color: '#FFA30F',
-                          fontFamily: 'var(--font-sans)',
-                          fontWeight: 700,
-                          outline: 'none',
-                        }}
-                      />
+                        <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0, border: '1px solid rgba(255,163,15,0.5)', borderRadius: 8, overflow: 'hidden' }}>
+                          <input
+                            type="number"
+                            min="0"
+                            value={outcomeMetrics[def.label] ?? def.defaultMetric}
+                            onChange={e => setOutcomeMetrics(prev => ({ ...prev, [def.label]: e.target.value }))}
+                            onClick={e => e.stopPropagation()}
+                            style={{
+                              background: 'rgba(255,255,255,0.08)',
+                              border: 'none',
+                              padding: '6px 10px',
+                              fontSize: 14,
+                              width: 64,
+                              color: '#FFA30F',
+                              fontFamily: 'var(--font-sans)',
+                              fontWeight: 700,
+                              outline: 'none',
+                              MozAppearance: 'textfield',
+                            } as React.CSSProperties}
+                          />
+                          <span style={{
+                            background: 'rgba(255,163,15,0.15)',
+                            color: '#FFA30F',
+                            fontWeight: 800,
+                            fontSize: 14,
+                            padding: '6px 10px',
+                            userSelect: 'none',
+                            borderLeft: '1px solid rgba(255,163,15,0.3)',
+                          }}>
+                            {def.suffix}
+                          </span>
+                        </span>
                       </span>
                     )}
                   </div>
@@ -1332,6 +1345,8 @@ function AIAssistant() {
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         @keyframes overlayFadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes featherWrite {
           0%, 100% { transform: rotate(-28deg) translate(0px, 0px); }
