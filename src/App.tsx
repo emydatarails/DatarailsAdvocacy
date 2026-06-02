@@ -919,6 +919,21 @@ function AIAssistant() {
             Writing your personal draft and making sure it's awesome
           </p>
 
+          {/* Patience hint */}
+          <p style={{
+            color: 'rgba(107,113,136,0.85)',
+            fontSize: 12,
+            fontWeight: 400,
+            fontFamily: 'var(--font-sans)',
+            textAlign: 'center',
+            maxWidth: 300,
+            lineHeight: 1.6,
+            margin: '-16px 0 0',
+            letterSpacing: '0.01em',
+          }}>
+            Good things take time — this can take up to a minute.<br />Please don't refresh the page!
+          </p>
+
           {/* Bouncing dots */}
           <div style={{ display: 'flex', gap: 8 }}>
             {[0, 1, 2].map(i => (
