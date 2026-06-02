@@ -887,36 +887,7 @@ function AIAssistant() {
               transformOrigin: '50% 90%',
               filter: 'drop-shadow(0 6px 20px rgba(255,163,15,0.4))',
             }}>
-              <svg width="88" height="168" viewBox="0 0 88 168" fill="none">
-                <defs>
-                  <linearGradient id="fgMain" x1="44" y1="0" x2="44" y2="148" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stopColor="#FFE566"/>
-                    <stop offset="45%" stopColor="#FFA30F"/>
-                    <stop offset="100%" stopColor="#D97000"/>
-                  </linearGradient>
-                  <linearGradient id="fgNib" x1="44" y1="140" x2="44" y2="168" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stopColor="#CCCCCC"/>
-                    <stop offset="100%" stopColor="#888888"/>
-                  </linearGradient>
-                </defs>
-                {/* Outer feather body */}
-                <path d="M44 6 C60 12, 80 30, 79 58 C78 80, 66 98, 54 130 L44 150 L34 130 C22 98, 10 80, 9 58 C8 30, 28 12, 44 6Z" fill="url(#fgMain)"/>
-                {/* Inner sheen */}
-                <path d="M44 14 C56 19, 70 34, 70 58 C69 76, 59 92, 50 122 L44 140 L38 122 C29 92, 19 76, 18 58 C18 34, 32 19, 44 14Z" fill="rgba(255,245,190,0.22)"/>
-                {/* Barbs right */}
-                {[18,30,42,54,66,80,94].map((y, i) => (
-                  <line key={`r${i}`} x1="44" y1={y} x2={Math.min(79, 44 + (y < 58 ? (y/58)*34 : Math.max(4,(100-y)/42*22)))} y2={y+9} stroke="rgba(255,205,70,0.38)" strokeWidth="0.9" strokeLinecap="round"/>
-                ))}
-                {/* Barbs left */}
-                {[18,30,42,54,66,80,94].map((y, i) => (
-                  <line key={`l${i}`} x1="44" y1={y} x2={Math.max(9, 44 - (y < 58 ? (y/58)*34 : Math.max(4,(100-y)/42*22)))} y2={y+9} stroke="rgba(255,205,70,0.38)" strokeWidth="0.9" strokeLinecap="round"/>
-                ))}
-                {/* Central rib */}
-                <path d="M44 6 Q44 80 44 150" stroke="rgba(150,85,0,0.45)" strokeWidth="1.6" fill="none" strokeLinecap="round"/>
-                {/* Nib */}
-                <path d="M44 146 L39 168 L44 161 L49 168 Z" fill="url(#fgNib)"/>
-                <line x1="44" y1="154" x2="44" y2="168" stroke="rgba(100,100,100,0.55)" strokeWidth="0.7"/>
-              </svg>
+              <img src="/feather.svg" alt="feather pen" width="150" height="150" style={{ display: 'block' }} />
             </div>
           </div>
 
