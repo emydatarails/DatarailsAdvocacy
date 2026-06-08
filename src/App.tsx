@@ -954,9 +954,6 @@ function AIAssistant() {
         <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#FFA30F', display: 'flex', alignItems: 'center', gap: 8 }}>
           <Sparkles size={14} /> AI Writing Assistant
         </span>
-        <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6B7188', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', padding: '4px 10px', borderRadius: 6 }}>
-          Beta
-        </span>
       </div>
 
       {/* Step progress bar */}
