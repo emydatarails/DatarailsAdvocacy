@@ -170,25 +170,25 @@ export const sceneSeeds = [
 // does not converge on a single stock phrase. Described, never quoted: a
 // quoted example would be copied into every post.
 export const mentionStyles = [
-  "inside a sentence about something that went wrong or was irritating, where the brand is part of the irritation, not the fix",
+  "as what made one specific day easier, with the one concrete detail that showed it",
   "inside a mundane action the writer took with one specific report, said the way you would say you opened a spreadsheet",
-  "in a list of what the writer had open, with no more weight than the browser tab next to it",
-  "as the place one report sits, said once in passing, with no comment on whether that is good",
-  "in a half-sentence about a setup detail that is still not right",
+  "as the place one report now sits, said in passing, with a short plain remark on why the writer likes that",
+  "as the thing the writer would tell a peer to look at, said once, with the reason attached and no sales voice",
+  "in a sentence about a colleague's week being different now, with the brand as where that happens",
+  "inside a sentence about a setup detail that is still not right, so the praise elsewhere is believable",
 ];
 
 // The one honest, unflattering element in the post. Rotated so it does not
 // always land as "X still comes in on paper and I still key it in" in the
 // penultimate paragraph.
 export const honestyBeats = [
-  "the migration is partial: one process moved, a related one did not, and the writer says which",
-  "the first month or quarter on the new setup was worse than before, and the writer says how",
-  "a mistake of the writer's own from before, told plainly, that the new setup had nothing to do with",
-  "a habit the writer keeps, mentioned as a fact in passing, without defending it and without declaring it permanent",
-  "the writer was annoyed by something about the change itself and is still a bit annoyed",
-  "a colleague was right about something and the writer was not, and it is left there",
-  "nothing extra: the scene itself is unflattering enough, so no separate confession is added",
-  "nothing extra: the scene itself is unflattering enough, so no separate confession is added",
+  "one related process has not moved yet, and the writer says which",
+  "the first weeks were bumpier than expected, said in one sentence and not undercut",
+  "a habit the writer keeps, mentioned as a fact in passing, without defending it",
+  "a mistake of the writer's own from before, told plainly",
+  "a small thing about the change that annoyed the writer, said with some humour",
+  "nothing extra: the scene is specific enough that no separate caveat is needed",
+  "nothing extra: the scene is specific enough that no separate caveat is needed",
 ];
 
 // How the post ends. The audit found eight of twelve ending on a wholesome
@@ -196,10 +196,11 @@ export const honestyBeats = [
 // case-study payoff. None of these are that.
 export const endings = [
   "ends on a complete sentence about a small next task, with no wrap-up sentence after it",
-  "ends on a flat statement of what is on the calendar next, with no feeling attached",
-  "ends on a problem that is genuinely open and flatters nobody, the writer and the tool included",
+  "ends on a plain statement of the one thing the writer likes most about how work goes now, said without a slogan",
+  "ends on a problem that is still open, said without drama",
   "ends on a question to the reader about how they handle the same thing, asked plainly, not as engagement bait",
   "ends the moment the scene ends, one sentence after the last concrete action",
+  "ends on what the writer would say to a peer who asked, in one sentence, in their own register",
   "ends on something the writer got wrong in the story, restated plainly, with nothing after it",
 ];
 
@@ -261,7 +262,6 @@ PHRASES AND MOVES THAT ARE USED TO DEATH IN POSTS LIKE THIS (do not use any of t
 - "What changed wasn't the numbers, it was X", "the real number is", "that's the number on the slide"
 - "That surprised me more than the numbers"
 - "Not X. Y." contrast constructions more than once in the post
-- "Nobody" as the payoff word ("nobody asked", "nobody noticed", "nobody was waiting") more than once
 - "For years I assumed", "For years I believed", "I used to think" as the first words
 - "the version that lives in", "since we moved consolidation into", "pulls their own numbers" as the brand sentence
 - A colleague or junior who "had already built it" in the tool before the writer got in, or did the hero move on their own
@@ -269,24 +269,18 @@ PHRASES AND MOVES THAT ARE USED TO DEATH IN POSTS LIKE THIS (do not use any of t
 - A before scene and an after scene staged at the same date ("August two years ago" then "August this year")
 - Someone being out, on leave or having just resigned as the reason the writer had to do the work
 - A "walked a new hire through it and there was nothing to explain" punchline
-- "I no longer ...", "one place", "one version of the truth", "slightly different truth", "the whole workflow in one sentence"
 - Opening with "Which one of these is the real ..." or "Closed the laptop ... and then opened it again"
 - More than one clock time, more than two named source systems, any colleague's first name
 - "I built the mappings myself" over evenings or weekends, or any footnote about the writer's own setup effort
 - An unfinished final sentence as a way of sounding casual
 - A colleague's quoted remark that delivers the point of the post
-- "review instead of rebuild", "the same model", "nothing to paste", "on screen by the time", "matched to the pound/cent"
-- "I had to think", "I had doubts", "I doubted", "I argued against", "lost that one", "she was right"
+- "single source of truth", "one version of the truth", "game changer", "seamless", "review instead of rebuild" as a slogan
 - A colleague doing the key step "herself" or "himself" in the tool
 - A stray detail at the end (a lunch order, a noise outside) placed to look unscripted
 - "Next month I'm", "at the next close I'm going to" as the last sentence
 - Opening with what something "used to take" or "used to own", or any "two years ago ... this morning" pairing
 - "thirty-odd tabs", "fifty-odd tabs", or a tab count of any kind
-- "never has to ask", "never had to ask", or any sentence about what a colleague no longer needs to do
-- "gets looked up in", "sits in ... now" as the brand sentence
-- "spent the morning on X instead of Y", "instead of rebuilding", or any sentence whose shape is analysis-instead-of-grunt-work
 - "that's not going away", "that isn't changing", "I'm not going to stop"
-- An auditor or leader asking a question that gets answered while they wait
 - A closing line that sounds like an aphorism or a bumper sticker
 - Any sentence that could be lifted from a case study or a vendor page`;
 
@@ -342,13 +336,13 @@ export function buildDraftPrompt(input: PostInput, ctx: DraftContext): string {
 
   return `You are ghostwriting a LinkedIn post for a finance professional about their real experience using Datarails. It has to read like something they typed themselves in one sitting: not a press release, not a testimonial, not a "thought leadership" post. A real person, being specific about their own work.
 
-THE TEST THIS POST HAS TO PASS:
-Delete the word @Datarails from the finished post and it should still make complete sense and lose nothing. The brand appears once because the writer uses it, not because it did anything. Nothing in the post is caused by the tool, solved by the tool, or faster because of the tool. If a question gets asked in the scene, it is not answered on the spot, and nobody turns a screen around.
+WHAT THIS POST IS:
+A recommendation from a peer. The writer is glad they use Datarails and says so plainly, the way you would tell a friend about a tool you actually like: what it changed for you, on which day, with the detail that made you notice. Datarails is allowed to be the reason something got better; say what it did in one or two concrete terms, in the writer's own words. What makes this authentic is specificity and honesty, not neutrality. What makes it an ad is vocabulary, stacked outcomes, and a tidy arc, so those are what to avoid.
 
 Do not reuse wording from these instructions in the post. They describe intent; the words are yours.
 
 SIZE, BEFORE ANYTHING ELSE:
-${WORD_BUDGET} in total. That is a short post: one scene, one honest element, and they can share sentences. Drafts that run long get cut by an editor who does not know which detail mattered to you, so write short and keep the detail you care about.
+${WORD_BUDGET} in total. That is a short post: one scene, one thing that got better, and if it fits, one thing that is still ordinary; they can share sentences. Drafts that run long get cut by an editor who does not know which detail mattered to you, so write short and keep the detail you care about.
 
 WHO IS WRITING:
 ${describePerson(input)}
@@ -394,24 +388,24 @@ HOW REAL PEOPLE WRITE THIS KIND OF POST:
 - Details should belong to this industry and role. A controller in manufacturing and an analyst in retail do not have the same bad day.
 - Mix sentence lengths. A long sentence that carries a whole thought, then a short one. Never three sentences of the same length in a row.
 - Starting a sentence with "And", "But" or "So" is fine.
-- The change was partial and unglamorous. Nobody else quietly did the work for the writer, and the writer does not footnote their own effort either. Do not stage a before scene and an after scene at the same date.
+- The change was real but not total; something is still ordinary. Nobody else quietly did the work for the writer, and the writer does not footnote their own effort either. Do not stage a before scene and an after scene at the same date.
 - Write the way this person talks: most people use contractions in a post. At most one clock time, at most one named source system, no first names, and no place name unless the story needs it.
 - Colleagues are roles, and not every colleague is "she": vary pronouns or avoid them.
-- The scene is not a demo. A leader asking a question and getting an answer in one click is a demo. If a question is asked, the writer does not fully answer it on the spot.
-- The writer was never a skeptic who was won over, and never says they had doubts. Doubt that remains is fine; doubt that was resolved is a testimonial.
-- Mention @Datarails exactly once, ${mentionStyle}. It is never the subject of a sentence and never the reason something is good: the writer and the team do things, the brand is where or with what. Never "with @Datarails", "thanks to @Datarails", "@Datarails lets us". Never in the last two sentences.
+- The scene is not a demo. If a leader asks a question and it gets answered fast, the post is about how that felt to the writer, not about the click.
+- If the writer had doubts, one sentence on that is plenty; the post does not turn on being proven wrong.
+- Mention @Datarails once, ${mentionStyle}. It can be what made the difference; say what it did in concrete terms (which report, which step, which day) rather than in adjectives. Never "with @Datarails, everything changed"; instead the specific thing that changed. Not in the last sentence.
 - Do not explain what Datarails is or list features. Only what changed for this person and their team.
 
-THIS IS NOT AN AD. A reader should be unable to tell whether the writer likes the vendor:
-- The outcome phrases in the brief are marketing language. Do not reuse their wording. Translate each into what the writer saw and could point to on a calendar or a screen, or leave it out.
-- No accuracy or speed claims phrased as results ("landed within a few points", "in under an hour"). Say what happened on the day, not what it proves.
-- No recommendation, no invitation, no advice to the reader, no "if you're dealing with", no exclamation marks, no gratitude to the vendor.
-- The post never ends on the product and never ends on a reward.
+AUTHENTIC, NOT COPY:
+- The outcome phrases in the brief are the writer's real results, but in marketing wording. Keep the substance, rewrite the wording as the writer would say it to a colleague.
+- Say what got better and how you noticed. Being glad about it is fine when it sounds like a person talking; the press-release register (thrilled, excited, proud to partner) is not.
+- It is fine to say you would tell a peer to look at it. It is not fine to tell the reader what to do: no "if you're dealing with", no "reach out", no "check it out", no "DM me", no exclamation marks.
+- Small ordinariness keeps it true: something unchanged, a habit kept, a step still done by hand. Include one when it fits the scene; do not force one into every post.
+- Do not stage a before scene and an after scene at the same date, and do not end on a moral.
 
 NUMBERS AND OUTCOMES:
-- The outcomes in the brief are the reason for the post, not its content. Do not state an improvement as a comparison: no "two days instead of five", "half the time", "before it took", "went out Thursday instead of Friday". Say what happened on one specific day and what did not, in the same flat register, and let the reader do the arithmetic.
-- At most one figure of any kind in the whole post, and none of the percentages from the brief.
-- Never list outcomes back to back. That is a slide, not a post.
+- The outcomes in the brief are real. State at most two of them, in the writer's words, woven into the story where they were noticed, not listed. "Close is down to two days from five" said once in passing is a person; three outcomes in one sentence is a slide.
+- At most one percentage in the whole post. Days, evenings, files and people are better than percentages.
 ${overusedMoves}
 
 WORDS TO NEVER USE:
@@ -438,7 +432,7 @@ export function buildEditPrompt(input: PostInput, draft: string): string {
         ? `The draft is ${chars} characters, under the ${MIN_CHARS} floor. Add one concrete detail to the existing scene. Do not add a new paragraph of reflection.`
         : `The draft is ${chars} characters. Keep it between ${MIN_CHARS} and ${MAX_CHARS}. Your edit must not make it longer; if you add a phrase, cut one.`;
 
-  return `You are editing a LinkedIn post so it reads like the finance professional who lived it typed it themselves. Two jobs, in this order: get the length right, then remove anything that sounds generated. Beyond those two jobs, keep every sentence that already sounds like a person.
+  return `You are editing a LinkedIn post so it reads like the finance professional who lived it typed it themselves. It is a genuine recommendation from someone who likes the product; keep that. Two jobs, in this order: get the length right, then remove anything that sounds generated or copied from marketing. Beyond those two jobs, keep every sentence that already sounds like a person.
 
 LENGTH (this comes first, it is a hard limit):
 ${lengthNote}
@@ -462,13 +456,13 @@ WHAT TO FIX, IN ORDER:
    - The same sentence shape repeated paragraph after paragraph
    Fix by rewriting as something the person would say out loud, or by deleting.
 
-2. Anything that sounds like marketing or a case study. Outcomes listed back to back, percentages quoted like a slide, praise of the tool, words like seamless, streamline, transform, empower, game-changer, journey, robust, leverage, unlock, elevate, single source of truth, peace of mind. Replace with the specific thing that happened, or cut.
+2. Anything that sounds like marketing rather than a person. Outcomes listed back to back, percentages quoted like a slide, praise in adjectives with no detail behind it, words like seamless, streamline, transform, empower, game-changer, journey, robust, leverage, unlock, elevate, single source of truth, peace of mind. Replace with the specific thing that happened, or cut.
 
 3. Rhythm. If sentences are all roughly the same length, vary them: one long sentence that carries a thought, then a short one. Do not create fragment chains to do this.
 
 4. Voice. The post needs one opinion or reaction that is clearly this person's, and one detail only someone in that job would mention. If the draft already has both, leave them alone. If it lacks them, add one of each in the writer's own register. Do not add slang, do not add jokes, do not add a lesson.
 
-5. Pitch check. Delete the word @Datarails in your head and reread: if any sentence stops making sense or loses its point, that sentence is an ad and gets rewritten so the writer or a colleague is doing the thing. Then read it once more as a skeptical peer who assumes the vendor asked for this post. Any sentence that could be pasted into a vendor testimonial gets rewritten as a plain observation of what happened, or cut. @Datarails must appear exactly once, never as the subject of a sentence, never as the reason something is good, never in the last two sentences. If the post ends on a reward (went home, walked the dog, bed at ten, a child's game) or on a line that sums up what changed, cut that line and end one sentence earlier. If a colleague "had already built it" before the writer arrived, give the work back to the writer. If the post says the writer built the mappings themselves over evenings or weekends, cut that clause. If a colleague's quoted line delivers the point, replace it with something mundane they actually would have said. Replace any first name with a role. If the last sentence is unfinished, finish it or cut it. No exclamation marks.
+5. Authenticity check. This is a recommendation from a peer, so the writer is allowed to like the product and say what it did. What you remove is copy: marketing vocabulary, outcomes stacked in one sentence, a tidy before-and-after arc, a moral at the end, praise in adjectives instead of details. Keep the enthusiasm where it is specific. @Datarails appears once and is not the last sentence. If a colleague "had already built it" before the writer arrived, give the work back to the writer. If the post says the writer built the mappings themselves over evenings or weekends, cut that clause. Replace any first name with a role. If the last sentence is unfinished, finish it or cut it. No exclamation marks.
 ${overusedMoves}
 
 HARD REQUIREMENTS:
@@ -483,7 +477,7 @@ HARD REQUIREMENTS:
 }
 
 export function buildDepitchPrompt(input: PostInput, post: string, tells: string[]): string {
-  return `This LinkedIn post by a ${input.profession} in ${input.industry} reads like an advertisement in places. Rewrite only the offending sentences so it reads like a person describing their own work. Keep everything else word for word.
+  return `This LinkedIn post by a ${input.profession} in ${input.industry} is a genuine recommendation of a tool the writer likes, but it reads like marketing copy in places. Rewrite only the offending sentences so they sound like the person saying the same thing to a colleague. Keep the enthusiasm and everything else word for word.
 
 POST:
 ${post}
@@ -492,8 +486,8 @@ WHAT READS AS AN AD:
 ${tells.map((t) => `- ${t}`).join("\n")}
 
 Rules for the rewrite:
-- The writer and their colleagues do things; @Datarails is only where or with what. It is never the subject of a sentence and never the reason something is good.
-- @Datarails appears exactly once, not in the last two sentences.
+- @Datarails can be the reason something got better; say what it did in concrete terms, not in adjectives or slogans.
+- @Datarails appears once, not in the last sentence.
 - No recommendations, no invitations, no advice to the reader, no exclamation marks, no gratitude.
 - At most one percentage in the whole post; say the rest in days, evenings, files or people, or drop it.
 - Keep the length within ${MIN_CHARS} to ${MAX_CHARS} characters.
