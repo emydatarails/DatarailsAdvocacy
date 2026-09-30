@@ -18,7 +18,7 @@
 //       Prints the sanitized version of a post and its length.
 //   npx tsx scripts/persona-run.ts lint DIR
 //       Lints every *.txt / *.json post in DIR and prints a report.
-//   npx tsx scripts/persona-run.ts bench [--configs minimal,low,medium,high,draft=medium,edit=low,fit=minimal]
+//   npx tsx scripts/persona-run.ts bench [--configs minimal,low,medium,high,draft=medium+edit=low+fit=minimal]
 //                                        [--personas 4] [--seeds 1] [--judge] [--out bench-output]
 //       Runs the full pipeline for each thinking configuration and reports
 //       latency per stage, length-fit rate, lint issues and (with --judge) a
@@ -207,10 +207,8 @@ function p95(xs: number[]): number {
 async function bench() {
   if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is required for bench mode");
   const { createGeminiLlm, parseThinkingPlan, resolveModel } = await import("../lib/gemini.js");
-  const configs = (arg("configs", "minimal,low,medium,high,draft=medium,edit=low,fit=minimal") as string)
-    // A per-stage spec contains commas itself, so split on commas that are
-    // not followed by "stage=".
-    .split(/,(?!\s*(?:draft|edit|fit)=)/)
+  const configs = (arg("configs", "minimal,low,medium,high,draft=medium+edit=low+fit=minimal") as string)
+    .split(",")
     .map((c) => c.trim())
     .filter(Boolean);
   const personaCount = Number(arg("personas", "4"));

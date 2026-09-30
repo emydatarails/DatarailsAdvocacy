@@ -131,7 +131,7 @@ to be confirmed with `npm run bench` against the live model:
 
 `high` everywhere is the wrong trade: it multiplies latency on the two
 mechanical passes for no quality gain, and the draft prompt already carries
-the creative constraints. The mixed `draft=medium,edit=low,fit=minimal`
+the creative constraints. The mixed `draft=medium+edit=low+fit=minimal`
 configuration is the one to compare against the all-`low` default.
 
 The wizard's overlay now names the stage as time passes (draft, editing,

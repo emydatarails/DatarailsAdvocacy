@@ -59,7 +59,7 @@ GEMINI_API_KEY=... npm run bench
 ```
 
 That runs the full pipeline for four personas under `minimal`, `low`,
-`medium`, `high` and a mixed `draft=medium,edit=low,fit=minimal`, records
+`medium`, `high` and a mixed `draft=medium+edit=low+fit=minimal`, records
 per-stage latency, fit rate and lint issues, has the model blind-score each
 post for naturalness, specificity and restraint, and writes
 `bench-output/summary.md` with a comparison table and every post side by

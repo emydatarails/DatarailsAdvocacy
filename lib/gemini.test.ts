@@ -25,6 +25,6 @@ test("thinking plan comes from the environment with per-stage overrides", () => 
 
 test("parseThinkingPlan accepts a level or per-stage pairs", () => {
   assert.deepEqual(parseThinkingPlan("high"), { draft: "high", edit: "high", fit: "high" });
-  assert.deepEqual(parseThinkingPlan("draft=medium,edit=low,fit=minimal"), { draft: "medium", edit: "low", fit: "minimal" });
+  assert.deepEqual(parseThinkingPlan("draft=medium+edit=low+fit=minimal"), { draft: "medium", edit: "low", fit: "minimal" });
   assert.throws(() => parseThinkingPlan("draft=fast"));
 });

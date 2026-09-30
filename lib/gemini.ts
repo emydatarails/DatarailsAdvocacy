@@ -63,7 +63,7 @@ export function resolveThinking(env: NodeJS.ProcessEnv = process.env): ThinkingP
   return plan;
 }
 
-/** Parses "low" or "draft=medium,edit=low,fit=minimal" into a plan. */
+/** Parses "low" or "draft=medium+edit=low+fit=minimal" into a plan. */
 export function parseThinkingPlan(spec: string): ThinkingPlan {
   const plan: ThinkingPlan = { ...DEFAULT_THINKING };
   const trimmed = spec.trim().toLowerCase();
@@ -71,12 +71,12 @@ export function parseThinkingPlan(spec: string): ThinkingPlan {
     plan.draft = plan.edit = plan.fit = trimmed;
     return plan;
   }
-  for (const part of trimmed.split(",")) {
+  for (const part of trimmed.split("+")) {
     const [stage, level] = part.split("=").map((x) => x.trim());
     if ((stage === "draft" || stage === "edit" || stage === "fit") && level && isThinkingName(level)) {
       plan[stage] = level;
     } else {
-      throw new Error(`Bad thinking spec "${spec}". Use a level (minimal|low|medium|high) or draft=..,edit=..,fit=..`);
+      throw new Error(`Bad thinking spec "${spec}". Use a level (minimal|low|medium|high) or draft=..+edit=..+fit=..`);
     }
   }
   return plan;
