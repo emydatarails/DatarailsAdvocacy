@@ -172,7 +172,7 @@ export const sceneSeeds = [
 export const mentionStyles = [
   "as what made one specific day easier, with the one concrete detail that showed it",
   "inside a mundane action the writer took with one specific report, said the way you would say you opened a spreadsheet",
-  "as the place one report now sits, said in passing, with a short plain remark on why the writer likes that",
+  "as the place one report now sits, said in passing, followed by the one concrete thing that is easier because of it",
   "as the thing the writer would tell a peer to look at, said once, with the reason attached and no sales voice",
   "in a sentence about a colleague's week being different now, with the brand as where that happens",
   "inside a sentence about a setup detail that is still not right, so the praise elsewhere is believable",
@@ -213,7 +213,6 @@ export const setupCosts = [
   "nothing is said about how it was set up; the post starts after that",
   "the person who did most of the setup has since left, and the writer inherited it half-documented",
   "a handful of accounts still do not map and get journaled by hand every month",
-  "the first quarter was run in parallel with the old files, which doubled the work for a while",
   "the writer argued against the spend and lost, and does not say whether they were wrong",
   "a mapping decision made early turned out to be wrong and reversing it was ugly",
 ];
@@ -223,7 +222,7 @@ export const setupCosts = [
 export const deadlines = [
   "the monthly management accounts",
   "a lender covenant report",
-  "an audit request list with a date on it",
+  "a list of audit requests due the same week",
   "the annual budget submission",
   "a payroll cut-off",
   "an investor or owner update",
@@ -263,6 +262,7 @@ PHRASES AND MOVES THAT ARE USED TO DEATH IN POSTS LIKE THIS (do not use any of t
 - "That surprised me more than the numbers"
 - "Not X. Y." contrast constructions more than once in the post
 - "For years I assumed", "For years I believed", "I used to think" as the first words
+- "what I like is", "what I like about that is", "my week looks different now", "worth paying"
 - "the version that lives in", "since we moved consolidation into", "pulls their own numbers" as the brand sentence
 - A colleague or junior who "had already built it" in the tool before the writer got in, or did the hero move on their own
 - A closing reward: went home early, walked the dog, made dinner, bed at ten, a child's game, a walk, signed off at four
@@ -384,6 +384,9 @@ ${styleGuide}
 
 HOW REAL PEOPLE WRITE THIS KIND OF POST:
 - Not everything in the brief has to appear. Pick what fits the scene and leave the rest out.
+- One hook per post. A deleted folder, a new hire, a deadline and a doubt are four hooks; pick one and let the others go.
+- In the sentence that names @Datarails, say the one concrete thing that was done in it, with a real verb: opened, changed, showed, pulled, traced. Not "sits in" or "lives in" on its own.
+- Prefer the artefact that disappeared over a summary claim: the folder that is empty, the file that stopped being emailed, the tab nobody opens, rather than "my week looks different now".
 - One concrete scene anchors everything. Which system, which report, which day of the process, who was waiting. Not "reporting was painful" but the specific afternoon it was.
 - Details should belong to this industry and role. A controller in manufacturing and an analyst in retail do not have the same bad day.
 - Mix sentence lengths. A long sentence that carries a whole thought, then a short one. Never three sentences of the same length in a row.

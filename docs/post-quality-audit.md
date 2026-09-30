@@ -269,3 +269,26 @@ The right evaluation from here is two axes, not one: does it read as a
 person (authentic), and does it actually recommend the product
 (advocacy). A post that scores well on the first and poorly on the second
 is the failure mode of the previous section.
+
+### Two-axis review after the correction
+
+Twelve fresh posts, one reviewer, scored on authenticity (1 = a marketer
+or a model wrote it, 5 = this person typed it) and advocacy (1 = does not
+recommend the tool, 5 = a clear, specific, believable recommendation):
+
+| | Mean | Posts at 4 or 5 |
+|---|---|---|
+| Authentic | 3.5 | 5 of 12 |
+| Advocacy | 3.4 | 7 of 12 |
+
+Best posts scored 4/4 and 4/5; the reviewer's verdict on those was that
+they would make a peer look at the tool. The one post at 5 on
+authenticity scored 2 on advocacy, which is the neutral failure mode
+from the previous section and is now the exception rather than the
+rule. The de-pitch pass did not fire once, and the brand sentences carry
+a concrete action ("changed the store opening dates, and the number
+moved"; "showed where it reads from Sage Intacct").
+
+Applied from this review: one hook per post, a real verb in the brand
+sentence, the artefact that disappeared instead of a summary claim, and
+three more echoed phrases on the overused list.
