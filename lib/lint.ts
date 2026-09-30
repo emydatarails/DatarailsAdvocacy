@@ -65,6 +65,7 @@ const PROMO_PATTERNS: Array<[RegExp, string]> = [
   [/\b(game[- ]chang|life[- ]chang|no[- ]brainer|best decision|worth every|trust me|shout[- ]?out|kudos to|hats off)\b/i, "marketing superlative"],
   [/\b(the|this|our) (platform|tool|solution|software|system) (is|was|has)\b/i, "talking about the product as a product"],
   [/\bI no longer\b/i, "case-study 'I no longer'"],
+  [/\b(never|no longer) (has|had|have|needs?|needed) to (ask|check|chase|wait|rebuild|wonder)\b/i, "case-study 'never has to ask'"],
   [/\b(review instead of rebuild|nothing (left )?to paste|matched .* to the (pound|cent|penny|dollar)|that was the whole conversation)\b/i, "demo-script line"],
   [/\b(one|single) (place|source|version) of (the )?truth\b|\bslightly different truth\b|\bsingle source\b/i, "single-source-of-truth vocabulary"],
   [/!/, "exclamation mark"],

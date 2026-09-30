@@ -210,3 +210,28 @@ from five in twelve to zero, three and four across the later rounds. The
 de-pitch pass fired on two posts in round seven and rewrote "ran it
 through @Datarails" into a plain location, which is the case it exists
 for.
+
+### Review 5 and where this stands
+
+Round eight, with the brand-deletion test as the first instruction: mean
+2.7, the first post ever scored 1 ("the only thing said about the tool is
+that its mapping is wrong and the author has been quietly hand-correcting
+it"), nine of twelve at 3 or below, and every review-4 pattern gone from
+the corpus. Mechanically it was the cleanest round: no length fixes
+needed, one de-pitch rewrite, zero lint issues.
+
+The one post scored 5 shows the residual risk: a rotated setup-cost item
+("IT held up a connection") became a full arc ending on "she's never had
+to ask which file is right". That item is removed, the "never has to
+ask" payoff is now a promo tell that triggers the de-pitch pass, and tab
+counts, "used to take" openers and default-she colleagues are on the
+banned list.
+
+Scores across the five reviews: 3.2, 2.6, 2.9, 3.0, 2.7. Different
+reviewers each time, so a third of a point is noise; the honest reading
+is a move from "about a third read as testimonials" to "about one in
+twelve does, and the detector catches the most common form". Further
+gains come from reading real output, not from more rules: run
+`npm run personas`, read the posts side by side, and add any recurring
+phrase to the overused list in `lib/generator.ts` or a pattern to
+`promoTells` in `lib/lint.ts`.

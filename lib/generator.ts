@@ -210,7 +210,6 @@ export const endings = [
 export const setupCosts = [
   "nothing is said about how it was set up; the post starts after that",
   "nothing is said about how it was set up; the post starts after that",
-  "IT held up a system connection for months and the writer ran a workaround in the meantime",
   "the person who did most of the setup has since left, and the writer inherited it half-documented",
   "a handful of accounts still do not map and get journaled by hand every month",
   "the first quarter was run in parallel with the old files, which doubled the work for a while",
@@ -281,6 +280,9 @@ PHRASES AND MOVES THAT ARE USED TO DEATH IN POSTS LIKE THIS (do not use any of t
 - A colleague doing the key step "herself" or "himself" in the tool
 - A stray detail at the end (a lunch order, a noise outside) placed to look unscripted
 - "Next month I'm", "at the next close I'm going to" as the last sentence
+- Opening with what something "used to take" or "used to own", or any "two years ago ... this morning" pairing
+- "thirty-odd tabs", "fifty-odd tabs", or a tab count of any kind
+- "never has to ask", "never had to ask", or any sentence about what a colleague no longer needs to do
 - "gets looked up in", "sits in ... now" as the brand sentence
 - "spent the morning on X instead of Y", "instead of rebuilding", or any sentence whose shape is analysis-instead-of-grunt-work
 - "that's not going away", "that isn't changing", "I'm not going to stop"
@@ -393,7 +395,8 @@ HOW REAL PEOPLE WRITE THIS KIND OF POST:
 - Mix sentence lengths. A long sentence that carries a whole thought, then a short one. Never three sentences of the same length in a row.
 - Starting a sentence with "And", "But" or "So" is fine.
 - The change was partial and unglamorous. Nobody else quietly did the work for the writer, and the writer does not footnote their own effort either. Do not stage a before scene and an after scene at the same date.
-- Write the way this person talks: most people use contractions in a post. At most one clock time, at most two named source systems, no first names.
+- Write the way this person talks: most people use contractions in a post. At most one clock time, at most one named source system, no first names, and no place name unless the story needs it.
+- Colleagues are roles, and not every colleague is "she": vary pronouns or avoid them.
 - The scene is not a demo. A leader asking a question and getting an answer in one click is a demo. If a question is asked, the writer does not fully answer it on the spot.
 - The writer was never a skeptic who was won over, and never says they had doubts. Doubt that remains is fine; doubt that was resolved is a testimonial.
 - Mention @Datarails exactly once, ${mentionStyle}. It is never the subject of a sentence and never the reason something is good: the writer and the team do things, the brand is where or with what. Never "with @Datarails", "thanks to @Datarails", "@Datarails lets us". Never in the last two sentences.

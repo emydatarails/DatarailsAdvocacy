@@ -22,3 +22,7 @@ test("flags case-study vocabulary and reward closers", () => {
   assert.ok(promoTells("The pack went out at three.\n\nThen I walked the dog before it got dark.").length > 0);
   assert.deepEqual(promoTells("I walked the dog at six and came back to a reconciliation that still did not tie."), []);
 });
+
+test("flags the 'never has to ask' payoff", () => {
+  assert.ok(promoTells("She's never had to ask which file is right.").length > 0);
+});
