@@ -80,7 +80,9 @@ export function promoTells(post: string): string[] {
   const sentences = post.trim().split(/(?<=[.!?])\s+/);
   const last = sentences[sentences.length - 1] || "";
   const reward = last.match(/\b(walked the dog|went to bed at|(daughter|son|kid)'?s? (game|recital|match)|made (dinner|pasta)|went home (early|at)|signed off at|left at \d|closed the laptop at)\b/i);
-  if (reward) tells.push(`reward closer: "${last.trim()}"`);
+  // A reward closer is a short payoff line; a long sentence that mentions
+  // the dog on the way to something unresolved is just a sentence.
+  if (reward && last.split(/\s+/).length <= 12) tells.push(`reward closer: "${last.trim()}"`);
   const percentages = (post.match(/\d+\s?%/g) || []).length;
   if (percentages >= 3) tells.push(`${percentages} percentage figures in one post`);
   return tells;
