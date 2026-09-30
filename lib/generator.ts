@@ -114,7 +114,7 @@ FORMAT RULES FOR THIS STYLE:
 
 export const openingPatterns = [
   "Open cold, mid-scene. No stage setting. The reader arrives in the middle of a moment that is already happening.",
-  "Open with a count of something mundane that the writer only noticed later: exports, tabs, sign-offs, reminders. A full sentence, never a bare number, then move on.",
+  "Open with a count of something mundane: exports, tabs, sign-offs, reminders. A full sentence that says what the things were and where they went, never a bare number and never a remark about counting them. Then move on.",
   "Open with the question a leader, auditor or board member asked, in their words, then answer it in one line.",
   "Open with a recurring task that used to eat a specific evening or weekend. Name the task, not the feeling.",
   "Open with a belief the writer held about their own process, stated the way they would have said it in a meeting at the time. Do not start with 'For years' or 'I used to'. Then take it apart.",

@@ -87,3 +87,32 @@ deliberately misbehaving fake model.
 ## Round 3 (verification of the length fix)
 
 See the table appended below.
+
+12 fresh seeds, weighted toward the professional and detailed styles that
+overshot before:
+
+| Metric | Round 2 (24 posts) | Round 3 (12 posts) |
+|---|---|---|
+| Final length inside 600-800 | 21 of 23 | 12 of 12 |
+| Final length range | 654 to 807 | 702 to 794 |
+| Needed a fit pass | 15 | 2 |
+| Lint issues | 6 | 0 |
+| Any trope from the baseline table | 5 posts | 0 posts |
+
+Stage-1 drafts still run long for the detailed and casual styles (up to 990
+characters), so the edit pass does real length work; that is acceptable
+because it now lands inside the window on its own in 10 of 12 runs.
+
+One new pair of near-identical openings ("...and I only counted them when
+I sat down") came from the "count of something mundane" pattern; its
+wording was adjusted after this round.
+
+## How to re-run
+
+```
+GEMINI_API_KEY=... npm run personas      # real model, 24 posts
+npm run personas:lint
+```
+
+Read the posts side by side. The lint catches mechanics; the eye catches
+sameness.
