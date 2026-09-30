@@ -98,6 +98,41 @@ test("trimToLimit never drops the paragraph holding the tag", () => {
   assert.ok(out.length <= MAX_CHARS);
 });
 
+test("a promotional edit triggers the de-pitch pass, a clean one does not", async () => {
+  let depitchCalls = 0;
+  const clean = body(700);
+  const promo = clean.replace("hoped the intercompany", "and thanks to @Datarails hoped the intercompany");
+  const llm = async (prompt: string, stage: string) => {
+    if (stage === "draft") return clean;
+    if (stage === "edit") return promo;
+    if (stage === "depitch") {
+      depitchCalls++;
+      return clean;
+    }
+    return clean;
+  };
+  const r1 = await generatePost(input, llm);
+  assert.equal(depitchCalls, 1);
+  assert.ok(r1.depitched);
+  assert.equal(r1.post, clean);
+
+  const quiet = async (_p: string, stage: string) => {
+    if (stage === "depitch") depitchCalls++;
+    return clean;
+  };
+  depitchCalls = 0;
+  const r2 = await generatePost(input, quiet);
+  assert.equal(depitchCalls, 0);
+  assert.ok(!r2.depitched);
+});
+
+test("prompts carry no quoted brand sentence to copy", () => {
+  const p = buildDraftPrompt(input, pickDraftContext());
+  assert.ok(!/lives in @Datarails/.test(p));
+  assert.ok(!/moved consolidation into @Datarails/.test(p));
+  assert.match(p, /THIS IS NOT AN AD/);
+});
+
 test("a garbage edit pass falls back to the draft", async () => {
   const llm = async (prompt: string) => {
     if (prompt.startsWith("You are ghostwriting")) return body(700);

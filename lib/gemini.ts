@@ -25,7 +25,7 @@ export type ThinkingPlan = Record<Stage, ThinkingName>;
 
 // Draft gets a little reasoning for scene selection; edit and fit are
 // rewrite-and-count jobs.
-export const DEFAULT_THINKING: ThinkingPlan = { draft: "low", edit: "low", fit: "minimal" };
+export const DEFAULT_THINKING: ThinkingPlan = { draft: "low", edit: "low", depitch: "low", fit: "minimal" };
 
 const LEVELS: Record<ThinkingName, ThinkingLevel> = {
   minimal: ThinkingLevel.MINIMAL,
@@ -47,6 +47,7 @@ export function resolveModel(): string {
  *   GEMINI_THINKING            one level for every stage
  *   GEMINI_THINKING_DRAFT      per-stage overrides
  *   GEMINI_THINKING_EDIT
+ *   GEMINI_THINKING_DEPITCH
  *   GEMINI_THINKING_FIT
  * Unknown values are ignored so a typo cannot break generation.
  */
@@ -54,9 +55,9 @@ export function resolveThinking(env: NodeJS.ProcessEnv = process.env): ThinkingP
   const plan: ThinkingPlan = { ...DEFAULT_THINKING };
   const all = env.GEMINI_THINKING?.trim().toLowerCase();
   if (all && isThinkingName(all)) {
-    plan.draft = plan.edit = plan.fit = all;
+    plan.draft = plan.edit = plan.depitch = plan.fit = all;
   }
-  for (const stage of ["draft", "edit", "fit"] as const) {
+  for (const stage of ["draft", "edit", "depitch", "fit"] as const) {
     const v = env[`GEMINI_THINKING_${stage.toUpperCase()}`]?.trim().toLowerCase();
     if (v && isThinkingName(v)) plan[stage] = v;
   }
@@ -68,12 +69,12 @@ export function parseThinkingPlan(spec: string): ThinkingPlan {
   const plan: ThinkingPlan = { ...DEFAULT_THINKING };
   const trimmed = spec.trim().toLowerCase();
   if (isThinkingName(trimmed)) {
-    plan.draft = plan.edit = plan.fit = trimmed;
+    plan.draft = plan.edit = plan.depitch = plan.fit = trimmed;
     return plan;
   }
   for (const part of trimmed.split("+")) {
     const [stage, level] = part.split("=").map((x) => x.trim());
-    if ((stage === "draft" || stage === "edit" || stage === "fit") && level && isThinkingName(level)) {
+    if ((stage === "draft" || stage === "edit" || stage === "depitch" || stage === "fit") && level && isThinkingName(level)) {
       plan[stage] = level;
     } else {
       throw new Error(`Bad thinking spec "${spec}". Use a level (minimal|low|medium|high) or draft=..+edit=..+fit=..`);

@@ -52,6 +52,44 @@ export const BANNED_PHRASES = [
   "spoiler",
 ];
 
+// Patterns that make a post read as an ad or a testimonial rather than a
+// person talking about their work. Any hit triggers a de-pitch rewrite in
+// the pipeline, so keep this list to things that are wrong every time.
+const PROMO_PATTERNS: Array<[RegExp, string]> = [
+  [/@?Datarails\s+(lets|let|allows|allowed|gives|gave|makes|made|helps|helped|handles|handled|does|did|takes|took|enables|enabled|saves|saved|turned|changed|solved|fixed|delivers|delivered)\b/i, "Datarails is the subject doing something for the writer"],
+  [/\b(with|thanks to|because of|using|through|via)\s+@?Datarails\b/i, "benefit attributed directly to Datarails"],
+  [/@?Datarails('s| is| has been| was)\s+(a |an |the )?(game|life|huge|massive|incredible|amazing|fantastic|great|brilliant|best|perfect)/i, "praise of the tool"],
+  [/\b(highly|strongly|can't|cannot|would) recommend\b/i, "recommendation"],
+  [/\b(check (it|them) out|reach out|dm me|message me|link in (the )?(bio|comments)|happy to (chat|share|talk|walk)|feel free to|let me know if)\b/i, "call to action"],
+  [/\bif (you|your team)('re| are)? (still|struggling|dealing|drowning|stuck|spending|tired)\b/i, "addressing the reader as a prospect"],
+  [/\b(game[- ]chang|life[- ]chang|no[- ]brainer|best decision|worth every|trust me|shout[- ]?out|kudos to|hats off)\b/i, "marketing superlative"],
+  [/\b(the|this|our) (platform|tool|solution|software|system) (is|was|has)\b/i, "talking about the product as a product"],
+  [/\bI no longer\b/i, "case-study 'I no longer'"],
+  [/\b(never|no longer) (has|had|have|needs?|needed) to (ask|check|chase|wait|rebuild|wonder)\b/i, "case-study 'never has to ask'"],
+  [/\b(review instead of rebuild|nothing (left )?to paste|matched .* to the (pound|cent|penny|dollar)|that was the whole conversation)\b/i, "demo-script line"],
+  [/\b(one|single) (place|source|version) of (the )?truth\b|\bslightly different truth\b|\bsingle source\b/i, "single-source-of-truth vocabulary"],
+  [/!/, "exclamation mark"],
+  [/\d+\s?%[^.]*\d+\s?%/, "two percentages in one sentence"],
+];
+
+export function promoTells(post: string): string[] {
+  const tells: string[] = [];
+  for (const [re, label] of PROMO_PATTERNS) {
+    const m = post.match(re);
+    if (m) tells.push(`${label}: "${m[0].trim()}"`);
+  }
+  // A wholesome reward as the final sentence is the case-study payoff.
+  const sentences = post.trim().split(/(?<=[.!?])\s+/);
+  const last = sentences[sentences.length - 1] || "";
+  const reward = last.match(/\b(walked the dog|went to bed at|(daughter|son|kid)'?s? (game|recital|match)|made (dinner|pasta)|went home (early|at)|signed off at|left at \d|closed the laptop at)\b/i);
+  // A reward closer is a short payoff line; a long sentence that mentions
+  // the dog on the way to something unresolved is just a sentence.
+  if (reward && last.split(/\s+/).length <= 12) tells.push(`reward closer: "${last.trim()}"`);
+  const percentages = (post.match(/\d+\s?%/g) || []).length;
+  if (percentages >= 3) tells.push(`${percentages} percentage figures in one post`);
+  return tells;
+}
+
 export function lintPost(post: string): LintResult {
   const issues: string[] = [];
   const chars = post.length;
@@ -77,6 +115,8 @@ export function lintPost(post: string): LintResult {
   if (/^["“]/.test(post.trim()) && /["”]$/.test(post.trim())) issues.push("wrapped in quotes");
   if (!/\bI\b/.test(post)) issues.push("not first person");
   if (/^(I was|I remember|It was)\b/i.test(post.trim())) issues.push("lazy opening");
+
+  for (const tell of promoTells(post)) issues.push(`promo tell, ${tell}`);
 
   const lower = post.toLowerCase();
   for (const phrase of BANNED_PHRASES) {

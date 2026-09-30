@@ -12,6 +12,8 @@
 //       archetype/opening/trigger/voice is derived from the seed.
 //   npx tsx scripts/persona-run.ts prompt --persona K --stage 2 --draft FILE
 //       Prints the stage-2 (edit) prompt for a draft (after sanitizing it).
+//   npx tsx scripts/persona-run.ts prompt --persona K --stage depitch --draft FILE
+//       Prints the de-pitch prompt for a post, or says it would not run.
 //   npx tsx scripts/persona-run.ts prompt --persona K --stage 3 --draft FILE
 //       Prints the stage-3 (length fit) prompt for a post.
 //   npx tsx scripts/persona-run.ts sanitize FILE
@@ -29,6 +31,7 @@ import fs from "fs";
 import path from "path";
 import {
   buildDraftPrompt,
+  buildDepitchPrompt,
   buildEditPrompt,
   buildFitPrompt,
   generatePost,
@@ -36,12 +39,20 @@ import {
   openingPatterns,
   postTriggers,
   sceneSeeds,
+  mentionStyles,
+  honestyBeats,
+  endings,
+  setupCosts,
+  deadlines,
+  regions,
+  sourceSystems,
+  weekdays,
   writerVoices,
   type DraftContext,
   type PostInput,
 } from "../lib/generator.js";
 import { sanitizePost } from "../lib/sanitize.js";
-import { lintPost } from "../lib/lint.js";
+import { lintPost, promoTells } from "../lib/lint.js";
 
 // Realistic personas that mirror what the wizard in src/App.tsx sends:
 // profession + industry chips, 1-3 moments joined by ", ", 0-3 outcomes
@@ -133,22 +144,41 @@ export const personas: Record<string, PostInput> = {
   },
 };
 
-function seededPick<T>(arr: T[], seed: number, salt: number): T {
-  // Small deterministic hash so a seed reproduces the same context.
-  let h = (seed * 2654435761 + salt * 40503) >>> 0;
-  h ^= h >>> 13;
-  h = Math.imul(h, 0x5bd1e995) >>> 0;
-  h = (h ^ (h >>> 15)) >>> 0;
-  return arr[h % arr.length];
+// mulberry32: a small PRNG so one seed yields an independent, uniform draw
+// per list. The earlier salted hash clustered choices across nearby seeds,
+// which made the evaluation rounds look more repetitive than production
+// (Math.random) would be.
+function rng(seed: number): () => number {
+  let a = (seed * 0x9e3779b1) >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function seededPick<T>(arr: T[], next: () => number): T {
+  return arr[Math.floor(next() * arr.length)];
 }
 
 export function contextForSeed(seed: number): DraftContext {
+  const next = rng(seed);
   return {
-    archetype: seededPick(narrativeArchetypes, seed, 1),
-    openingPattern: seededPick(openingPatterns, seed, 2),
-    postTrigger: seededPick(postTriggers, seed, 3),
-    writerVoice: seededPick(writerVoices, seed, 4),
-    sceneSeed: seededPick(sceneSeeds, seed, 5),
+    archetype: seededPick(narrativeArchetypes, next),
+    openingPattern: seededPick(openingPatterns, next),
+    postTrigger: seededPick(postTriggers, next),
+    writerVoice: seededPick(writerVoices, next),
+    sceneSeed: seededPick(sceneSeeds, next),
+    mentionStyle: seededPick(mentionStyles, next),
+    honestyBeat: seededPick(honestyBeats, next),
+    ending: seededPick(endings, next),
+    setupCost: seededPick(setupCosts, next),
+    deadline: seededPick(deadlines, next),
+    region: seededPick(regions, next),
+    sourceSystem: seededPick(sourceSystems, next),
+    weekday: seededPick(weekdays, next),
   };
 }
 
@@ -259,7 +289,7 @@ async function bench() {
         fs.writeFileSync(path.join(dir, `${key}_${seed}.txt`), result.post);
         console.log(
           `${config.padEnd(34)} ${key.padEnd(36)} ${String(totalMs).padStart(6)}ms ` +
-            `(d ${result.timings.draft} / e ${result.timings.edit} / f ${result.timings.fit})  ` +
+            `(d ${result.timings.draft} / e ${result.timings.edit} / p ${result.timings.depitch} / f ${result.timings.fit})  ` +
             `${result.post.length} chars  ${lint.issues.length} lint` +
             (row.judge ? `  judge ${row.judge.natural}/${row.judge.specific}/${row.judge.restraint}` : ""),
         );
@@ -332,6 +362,14 @@ async function main() {
     } else if (stage === "2") {
       const draft = sanitizePost(fs.readFileSync(arg("draft")!, "utf8"));
       process.stdout.write(buildEditPrompt(persona, draft));
+    } else if (stage === "depitch") {
+      const post = sanitizePost(fs.readFileSync(arg("draft")!, "utf8"));
+      const tells = promoTells(post);
+      if (!tells.length) {
+        process.stderr.write("no promo tells; de-pitch pass would not run\n");
+        return;
+      }
+      process.stdout.write(buildDepitchPrompt(persona, post, tells));
     } else {
       const post = sanitizePost(fs.readFileSync(arg("draft")!, "utf8"));
       process.stdout.write(buildFitPrompt(post));
@@ -342,7 +380,8 @@ async function main() {
   if (mode === "sanitize") {
     const out = sanitizePost(fs.readFileSync(process.argv[3], "utf8"));
     process.stdout.write(out);
-    process.stderr.write(`\n[${out.length} chars]\n`);
+    const tells = promoTells(out);
+    process.stderr.write(`\n[${out.length} chars${tells.length ? `; promo tells: ${tells.join(" | ")}` : ""}]\n`);
     return;
   }
 
