@@ -192,10 +192,11 @@ export const mentionStyles = [
 export const honestyBeats = [
   "the migration is partial: one process moved, a related one did not, and the writer says which",
   "the first month or quarter on the new setup was worse than before, and the writer says how",
-  "a number in the new model was wrong for a reason nobody has found yet",
+  "a mistake of the writer's own from before, told plainly, that the new setup had nothing to do with",
   "a habit the writer refuses to give up, stated without apology and without a lesson",
-  "a mistake of the writer's own that is not redeemed by the end of the post",
-  "the writer still does not fully trust the output and checks it, and does not pretend that is going away",
+  "the writer was annoyed by something about the change itself and is still a bit annoyed",
+  "a colleague was right about something and the writer was not, and it is left there",
+  "nothing extra: the scene itself is unflattering enough, so no separate confession is added",
   "nothing extra: the scene itself is unflattering enough, so no separate confession is added",
 ];
 
@@ -203,13 +204,57 @@ export const honestyBeats = [
 // reward (went home, walked the dog, bed at ten), which reads as a
 // case-study payoff. None of these are that.
 export const endings = [
-  "ends mid-thought on a work detail, the way a message ends when the writer got pulled into something",
-  "ends on the unresolved error or the thing that is still broken, with no consolation after it",
+  "ends on a complete sentence about a small next task, with no wrap-up sentence after it",
   "ends on a flat statement of what is on the calendar next, with no feeling attached",
-  "ends on a question the writer still has about their own process",
-  "ends on something a colleague said, unanswered",
+  "ends on a question the writer still has about their own process, asked plainly",
+  "ends on something mundane a colleague said that is not a verdict on anything",
   "ends the moment the scene ends, one sentence after the last concrete action",
+  "ends on a detail from outside the story that the writer noticed at the time, unconnected to the point",
+  "ends on what the writer is doing differently next month, stated as a plan, not a lesson",
 ];
+
+// What the move to the new setup cost, if it is mentioned at all. The blind
+// review found "I built the mappings myself over two weekends" in ten of
+// twelve posts once the prompt asked for effort; the cost has to vary or
+// be absent.
+export const setupCosts = [
+  "nothing is said about how it was set up; the post starts after that",
+  "nothing is said about how it was set up; the post starts after that",
+  "IT held up a system connection for months and the writer ran a workaround in the meantime",
+  "the person who did most of the setup has since left, and the writer inherited it half-documented",
+  "a handful of accounts still do not map and get journaled by hand every month",
+  "the first quarter was run in parallel with the old files, which doubled the work for a while",
+  "the writer argued against the spend and lost, and does not say whether they were wrong",
+  "a mapping decision made early turned out to be wrong and reversing it was ugly",
+];
+
+// The deadline the scene runs against. Left alone, every story runs on
+// "board pack Thursday".
+export const deadlines = [
+  "the monthly management accounts",
+  "a lender covenant report",
+  "an audit request list with a date on it",
+  "the annual budget submission",
+  "a payroll cut-off",
+  "an investor or owner update",
+  "a grant or funder report",
+  "a tax filing the accountants are waiting on",
+  "a quarterly board pack",
+  "a reforecast a leader asked for with a week's notice",
+];
+
+// Concrete world details, rotated so twelve writers do not share one plant,
+// one colleague and one weekday. The prompt tells the model to swap a
+// system for a neighbouring one if it does not fit the industry.
+export const regions = [
+  "the Midwest", "the Pacific Northwest", "Texas", "the Northeast", "the Southeast", "Ontario",
+  "the north of England", "Ireland", "the Netherlands", "New South Wales", "Southern California", "Colorado",
+];
+export const sourceSystems = [
+  "NetSuite", "Sage Intacct", "QuickBooks", "Dynamics 365 Business Central", "SAP Business One", "Oracle",
+  "Epicor", "Xero", "Workday", "ADP", "Paylocity", "Salesforce", "HubSpot", "Bill.com", "Coupa", "Expensify",
+];
+export const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
 // Recurring tells from the persona audit. Any one of these is fine in a
 // single post; across fifty posts they read as one machine. Both prompts
@@ -237,7 +282,11 @@ PHRASES AND MOVES THAT ARE USED TO DEATH IN POSTS LIKE THIS (do not use any of t
 - A "walked a new hire through it and there was nothing to explain" punchline
 - "I no longer ...", "one place", "one version of the truth", "slightly different truth", "the whole workflow in one sentence"
 - Opening with "Which one of these is the real ..." or "Closed the laptop ... and then opened it again"
-- More than one clock time, more than two named source systems, more than one named colleague
+- More than one clock time, more than two named source systems, any colleague's first name
+- "I built the mappings myself" over evenings or weekends, or any footnote about the writer's own setup effort
+- An unfinished final sentence as a way of sounding casual
+- A colleague's quoted remark that delivers the point of the post
+- "review instead of rebuild", "the same model", "nothing to paste", "on screen by the time", "matched to the pound/cent"
 - A closing line that sounds like an aphorism or a bumper sticker
 - Any sentence that could be lifted from a case study or a vendor page`;
 
@@ -250,6 +299,11 @@ export interface DraftContext {
   mentionStyle: string;
   honestyBeat: string;
   ending: string;
+  setupCost: string;
+  deadline: string;
+  region: string;
+  sourceSystem: string;
+  weekday: string;
 }
 
 export function pickRandom<T>(arr: T[]): T {
@@ -266,6 +320,11 @@ export function pickDraftContext(): DraftContext {
     mentionStyle: pickRandom(mentionStyles),
     honestyBeat: pickRandom(honestyBeats),
     ending: pickRandom(endings),
+    setupCost: pickRandom(setupCosts),
+    deadline: pickRandom(deadlines),
+    region: pickRandom(regions),
+    sourceSystem: pickRandom(sourceSystems),
+    weekday: pickRandom(weekdays),
   };
 }
 
@@ -278,7 +337,7 @@ function describePerson(input: PostInput): string {
 
 export function buildDraftPrompt(input: PostInput, ctx: DraftContext): string {
   const { style } = input;
-  const { archetype, openingPattern, postTrigger, writerVoice, sceneSeed, mentionStyle, honestyBeat, ending } = ctx;
+  const { archetype, openingPattern, postTrigger, writerVoice, sceneSeed, mentionStyle, honestyBeat, ending, setupCost, deadline, region, sourceSystem, weekday } = ctx;
   const styleGuide = styleInstructions[style as string] || styleInstructions.professional;
 
   return `You are ghostwriting a LinkedIn post for a finance professional about their real experience using Datarails. It has to read like something they typed themselves in one sitting: not a press release, not a testimonial, not a "thought leadership" post. A real person, being specific about their own work.
@@ -295,6 +354,13 @@ ${writerVoice}
 
 WHERE THE STORY SITS:
 ${sceneSeed}. Use this as the backdrop for the concrete scene. Pick details that belong to this moment in the year and to this industry.
+
+THE WRITER'S WORLD (use these; they are this person's real context, not the first ones that come to mind):
+- The business is in ${region}.
+- The deadline the scene runs against is ${deadline}, and the day that matters is a ${weekday}.
+- One source system in the story is ${sourceSystem}. If it does not fit this industry, use a neighbouring system of the same kind, not a famous one.
+- Colleagues are referred to by role, never by first name.
+- How the new setup came to be: ${setupCost}. Do not add a line about the writer's own effort building it unless that is the cost named here.
 
 WHY THEY ARE WRITING TODAY (invisible context, never stated in the post):
 ${postTrigger}
@@ -323,8 +389,10 @@ HOW REAL PEOPLE WRITE THIS KIND OF POST:
 - Details should belong to this industry and role. A controller in manufacturing and an analyst in retail do not have the same bad day.
 - Mix sentence lengths. A long sentence that carries a whole thought, then a short one. Never three sentences of the same length in a row.
 - Starting a sentence with "And", "But" or "So" is fine.
-- The change was partial and unglamorous. The writer did the tedious setup themselves and it cost them something; nobody else quietly did it for them. Do not stage a before scene and an after scene at the same date.
-- Write the way this person talks: most people use contractions in a post. At most one clock time, at most two named source systems, at most one named colleague.
+- The change was partial and unglamorous. Nobody else quietly did the work for the writer, and the writer does not footnote their own effort either. Do not stage a before scene and an after scene at the same date.
+- Write the way this person talks: most people use contractions in a post. At most one clock time, at most two named source systems, no first names.
+- The scene is not a demo. A leader asking a question and getting an answer in one click is a demo; a leader asking a question and getting an answer the writer had to think about is a story.
+- The writer was not a skeptic who was won over. If they doubted the change, they are still allowed to doubt parts of it at the end.
 - Mention @Datarails exactly once, ${mentionStyle}. It is never the subject of a sentence and never the reason something is good: the writer and the team do things, the brand is where or with what. Never "with @Datarails", "thanks to @Datarails", "@Datarails lets us". Never in the last two sentences.
 - Do not explain what Datarails is or list features. Only what changed for this person and their team.
 
@@ -393,7 +461,7 @@ WHAT TO FIX, IN ORDER:
 
 4. Voice. The post needs one opinion or reaction that is clearly this person's, and one detail only someone in that job would mention. If the draft already has both, leave them alone. If it lacks them, add one of each in the writer's own register. Do not add slang, do not add jokes, do not add a lesson.
 
-5. Pitch check. Read it once more as a skeptical peer who assumes the vendor asked for this post. Any sentence that could be pasted into a vendor testimonial gets rewritten as a plain observation of what happened, or cut. @Datarails must appear exactly once, never as the subject of a sentence, never as the reason something is good, never in the last two sentences. If the post ends on a reward (went home, walked the dog, bed at ten, a child's game) or on a line that sums up what changed, cut that line and end one sentence earlier. If a colleague "had already built it" before the writer arrived, give the work back to the writer. No exclamation marks.
+5. Pitch check. Read it once more as a skeptical peer who assumes the vendor asked for this post. Any sentence that could be pasted into a vendor testimonial gets rewritten as a plain observation of what happened, or cut. @Datarails must appear exactly once, never as the subject of a sentence, never as the reason something is good, never in the last two sentences. If the post ends on a reward (went home, walked the dog, bed at ten, a child's game) or on a line that sums up what changed, cut that line and end one sentence earlier. If a colleague "had already built it" before the writer arrived, give the work back to the writer. If the post says the writer built the mappings themselves over evenings or weekends, cut that clause. If a colleague's quoted line delivers the point, replace it with something mundane they actually would have said. Replace any first name with a role. If the last sentence is unfinished, finish it or cut it. No exclamation marks.
 ${overusedMoves}
 
 HARD REQUIREMENTS:

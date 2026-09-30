@@ -42,6 +42,11 @@ import {
   mentionStyles,
   honestyBeats,
   endings,
+  setupCosts,
+  deadlines,
+  regions,
+  sourceSystems,
+  weekdays,
   writerVoices,
   type DraftContext,
   type PostInput,
@@ -158,6 +163,11 @@ export function contextForSeed(seed: number): DraftContext {
     mentionStyle: seededPick(mentionStyles, seed, 6),
     honestyBeat: seededPick(honestyBeats, seed, 7),
     ending: seededPick(endings, seed, 8),
+    setupCost: seededPick(setupCosts, seed, 9),
+    deadline: seededPick(deadlines, seed, 10),
+    region: seededPick(regions, seed, 11),
+    sourceSystem: seededPick(sourceSystems, seed, 12),
+    weekday: seededPick(weekdays, seed, 13),
   };
 }
 
