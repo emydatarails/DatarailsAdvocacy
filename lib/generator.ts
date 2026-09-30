@@ -51,11 +51,6 @@ export const narrativeArchetypes = [
       "Start with something finance people admit to each other but rarely post: a workaround they were embarrassed by, a number they never fully trusted, a habit they hid. Then show what changed, without glossing the hard parts.",
   },
   {
-    name: "The question",
-    description:
-      "Frame the story around one specific question a leader or auditor asked, the kind that used to trigger a scramble, and what answering it looks like now. Focus on the people in the room and how their posture changed, not on software.",
-  },
-  {
     name: "The cost nobody counted",
     description:
       "Lead with a cost that was easy to ignore: the evenings, the re-checking, the meeting that always slipped a day. Make it concrete without turning it into a statistic. Then show what that cost bought back once it was gone.",
@@ -155,28 +150,31 @@ export const writerVoices = [
 // Where in the year and the work the story sits. Keeps every post from
 // landing on "day three of close".
 export const sceneSeeds = [
-  "the middle of budget season, with department heads sending revised numbers daily",
-  "year-end, with auditors in the building asking for support on balances",
+  "budget season, with the writer's inbox full of other people's revisions",
+  "year-end, with auditors asking for support on balances",
   "the first close after a system change, when nothing is trusted yet",
-  "a mid-quarter reforecast triggered by a leadership request",
-  "the week a new hire joined the team and needed the process explained",
-  "the run-up to a board meeting, with the pack due in two days",
+  "a mid-quarter reforecast a leader asked for",
+  "the week a new hire needed the process explained",
+  "the run-up to a board meeting",
   "a routine month-end close in an otherwise quiet month",
   "the week after a mistake was found in a report that had already gone out",
   "a half-year review with the leadership team",
-  "the week the team was short-staffed and everything landed on one person",
+  "a week when the team was short-staffed",
+  "a bank covenant test that came in tight",
+  "an ERP upgrade that ate most of a week",
+  "an argument with sales operations over commission accruals",
+  "a month in which nothing much happened, which is the point",
 ];
 
 // How the brand appears in the post. One is picked per post so the mention
 // does not converge on a single stock phrase. Described, never quoted: a
 // quoted example would be copied into every post.
 export const mentionStyles = [
-  "as a place where a specific report or model now sits, named once in passing, the way you would name a folder or a system",
-  "in a sentence about where a particular number gets looked up now, in passing, with no comment on it",
-  "in a list of what the writer had open that morning, with no more weight than the browser tab next to it",
-  "in the middle of a list of the systems involved in the story, with no more weight than the ERP or the ledger",
-  "as the thing one specific process was moved into, mentioned in passing, with no claim about what that caused",
-  "as what was on screen during the scene, named once, then never mentioned again",
+  "inside a sentence about something that went wrong or was irritating, where the brand is part of the irritation, not the fix",
+  "inside a mundane action the writer took with one specific report, said the way you would say you opened a spreadsheet",
+  "in a list of what the writer had open, with no more weight than the browser tab next to it",
+  "as the place one report sits, said once in passing, with no comment on whether that is good",
+  "in a half-sentence about a setup detail that is still not right",
 ];
 
 // The one honest, unflattering element in the post. Rotated so it does not
@@ -186,7 +184,7 @@ export const honestyBeats = [
   "the migration is partial: one process moved, a related one did not, and the writer says which",
   "the first month or quarter on the new setup was worse than before, and the writer says how",
   "a mistake of the writer's own from before, told plainly, that the new setup had nothing to do with",
-  "a habit the writer refuses to give up, stated without apology and without a lesson",
+  "a habit the writer keeps, mentioned as a fact in passing, without defending it and without declaring it permanent",
   "the writer was annoyed by something about the change itself and is still a bit annoyed",
   "a colleague was right about something and the writer was not, and it is left there",
   "nothing extra: the scene itself is unflattering enough, so no separate confession is added",
@@ -199,9 +197,10 @@ export const honestyBeats = [
 export const endings = [
   "ends on a complete sentence about a small next task, with no wrap-up sentence after it",
   "ends on a flat statement of what is on the calendar next, with no feeling attached",
-  "ends on a question the writer still has about their own process, asked plainly",
+  "ends on a problem that is genuinely open and flatters nobody, the writer and the tool included",
+  "ends on a question to the reader about how they handle the same thing, asked plainly, not as engagement bait",
   "ends the moment the scene ends, one sentence after the last concrete action",
-  "ends on one thing the writer will handle differently at the next close, stated as a plan, not a lesson, and not starting with the words next month",
+  "ends on something the writer got wrong in the story, restated plainly, with nothing after it",
 ];
 
 // What the move to the new setup cost, if it is mentioned at all. The blind
@@ -281,7 +280,11 @@ PHRASES AND MOVES THAT ARE USED TO DEATH IN POSTS LIKE THIS (do not use any of t
 - "I had to think", "I had doubts", "I doubted", "I argued against", "lost that one", "she was right"
 - A colleague doing the key step "herself" or "himself" in the tool
 - A stray detail at the end (a lunch order, a noise outside) placed to look unscripted
-- "Next month I'm" as the last sentence
+- "Next month I'm", "at the next close I'm going to" as the last sentence
+- "gets looked up in", "sits in ... now" as the brand sentence
+- "spent the morning on X instead of Y", "instead of rebuilding", or any sentence whose shape is analysis-instead-of-grunt-work
+- "that's not going away", "that isn't changing", "I'm not going to stop"
+- An auditor or leader asking a question that gets answered while they wait
 - A closing line that sounds like an aphorism or a bumper sticker
 - Any sentence that could be lifted from a case study or a vendor page`;
 
@@ -337,6 +340,11 @@ export function buildDraftPrompt(input: PostInput, ctx: DraftContext): string {
 
   return `You are ghostwriting a LinkedIn post for a finance professional about their real experience using Datarails. It has to read like something they typed themselves in one sitting: not a press release, not a testimonial, not a "thought leadership" post. A real person, being specific about their own work.
 
+THE TEST THIS POST HAS TO PASS:
+Delete the word @Datarails from the finished post and it should still make complete sense and lose nothing. The brand appears once because the writer uses it, not because it did anything. Nothing in the post is caused by the tool, solved by the tool, or faster because of the tool. If a question gets asked in the scene, it is not answered on the spot, and nobody turns a screen around.
+
+Do not reuse wording from these instructions in the post. They describe intent; the words are yours.
+
 SIZE, BEFORE ANYTHING ELSE:
 ${WORD_BUDGET} in total. That is a short post: one scene, one honest element, and they can share sentences. Drafts that run long get cut by an editor who does not know which detail mattered to you, so write short and keep the detail you care about.
 
@@ -352,7 +360,7 @@ ${sceneSeed}. Use this as the backdrop for the concrete scene. Pick details that
 
 THE WRITER'S WORLD (use these; they are this person's real context, not the first ones that come to mind):
 - The business is in ${region}.
-- The deadline the scene runs against is ${deadline}, and the day that matters is a ${weekday}. That is context for the scene, never a scoreboard: the post does not say the deadline was beaten or met early.
+- The deadline the scene runs against is ${deadline}. If a weekday is named at all, once, it is ${weekday}. That is context for the scene, never a scoreboard: the post does not say the deadline was beaten or met early.
 - If a source system is named, it is ${sourceSystem} (or a neighbouring system of the same kind if that one does not fit the industry). Naming none is fine. Never list systems.
 - Colleagues are referred to by role, never by first name.
 - How the new setup came to be: ${setupCost}. Do not add a line about the writer's own effort building it unless that is the cost named here.
@@ -457,7 +465,7 @@ WHAT TO FIX, IN ORDER:
 
 4. Voice. The post needs one opinion or reaction that is clearly this person's, and one detail only someone in that job would mention. If the draft already has both, leave them alone. If it lacks them, add one of each in the writer's own register. Do not add slang, do not add jokes, do not add a lesson.
 
-5. Pitch check. Read it once more as a skeptical peer who assumes the vendor asked for this post. Any sentence that could be pasted into a vendor testimonial gets rewritten as a plain observation of what happened, or cut. @Datarails must appear exactly once, never as the subject of a sentence, never as the reason something is good, never in the last two sentences. If the post ends on a reward (went home, walked the dog, bed at ten, a child's game) or on a line that sums up what changed, cut that line and end one sentence earlier. If a colleague "had already built it" before the writer arrived, give the work back to the writer. If the post says the writer built the mappings themselves over evenings or weekends, cut that clause. If a colleague's quoted line delivers the point, replace it with something mundane they actually would have said. Replace any first name with a role. If the last sentence is unfinished, finish it or cut it. No exclamation marks.
+5. Pitch check. Delete the word @Datarails in your head and reread: if any sentence stops making sense or loses its point, that sentence is an ad and gets rewritten so the writer or a colleague is doing the thing. Then read it once more as a skeptical peer who assumes the vendor asked for this post. Any sentence that could be pasted into a vendor testimonial gets rewritten as a plain observation of what happened, or cut. @Datarails must appear exactly once, never as the subject of a sentence, never as the reason something is good, never in the last two sentences. If the post ends on a reward (went home, walked the dog, bed at ten, a child's game) or on a line that sums up what changed, cut that line and end one sentence earlier. If a colleague "had already built it" before the writer arrived, give the work back to the writer. If the post says the writer built the mappings themselves over evenings or weekends, cut that clause. If a colleague's quoted line delivers the point, replace it with something mundane they actually would have said. Replace any first name with a role. If the last sentence is unfinished, finish it or cut it. No exclamation marks.
 ${overusedMoves}
 
 HARD REQUIREMENTS:
