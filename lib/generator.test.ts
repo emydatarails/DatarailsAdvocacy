@@ -9,7 +9,7 @@ import {
   MAX_CHARS,
   MIN_CHARS,
   type PostInput,
-} from "./generator";
+} from "./generator.js";
 
 const input: PostInput = {
   profession: "Controller",

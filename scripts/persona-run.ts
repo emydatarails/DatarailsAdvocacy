@@ -33,9 +33,9 @@ import {
   writerVoices,
   type DraftContext,
   type PostInput,
-} from "../lib/generator";
-import { sanitizePost } from "../lib/sanitize";
-import { lintPost } from "../lib/lint";
+} from "../lib/generator.js";
+import { sanitizePost } from "../lib/sanitize.js";
+import { lintPost } from "../lib/lint.js";
 
 // Realistic personas that mirror what the wizard in src/App.tsx sends:
 // profession + industry chips, 1-3 moments joined by ", ", 0-3 outcomes
