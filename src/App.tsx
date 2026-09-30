@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, useScroll, useSpring } from 'motion/react';
 import {
   CheckCircle2,
@@ -715,6 +715,22 @@ function AIAssistant() {
   const [customProfession, setCustomProfession] = useState('');
   const [outcomeMetrics, setOutcomeMetrics] = useState<Record<string, string>>({});
   const [generatedPost, setGeneratedPost] = useState('');
+  const [loadingSeconds, setLoadingSeconds] = useState(0);
+
+  // The generator runs up to three model calls in sequence. Naming the
+  // stage as time passes makes a 20-40 second wait feel like progress
+  // instead of a stall.
+  useEffect(() => {
+    if (!loading) { setLoadingSeconds(0); return; }
+    const started = Date.now();
+    const id = setInterval(() => setLoadingSeconds(Math.floor((Date.now() - started) / 1000)), 500);
+    return () => clearInterval(id);
+  }, [loading]);
+  const loadingStage =
+    loadingSeconds < 8  ? 'Writing your first draft' :
+    loadingSeconds < 20 ? 'Reading it back the way an editor would' :
+    loadingSeconds < 35 ? 'Trimming it to LinkedIn length' :
+                          'Almost there, finishing up';
 
   const professions = ['FP&A Manager', 'Controller', 'CFO', 'Finance Director', 'VP Finance', 'Finance Analyst'];
   const industries  = ['SaaS', 'Manufacturing', 'Healthcare', 'Retail', 'Services', 'Real Estate'];
@@ -932,7 +948,7 @@ function AIAssistant() {
             margin: 0,
             letterSpacing: '-0.01em',
           }}>
-            Writing your personal draft and making sure it's awesome
+            {loadingStage}
           </p>
 
           {/* Patience hint */}
@@ -947,7 +963,7 @@ function AIAssistant() {
             margin: '-16px 0 0',
             letterSpacing: '0.01em',
           }}>
-            Good things take time — this can take up to a minute.<br />Please don't refresh the page!
+            Usually 20 to 40 seconds. Please don't refresh the page!
           </p>
 
           {/* Bouncing dots */}

@@ -7,3 +7,4 @@ coverage/
 .env*
 !.env.example
 persona-output/
+bench-output/

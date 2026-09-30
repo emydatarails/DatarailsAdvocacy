@@ -46,3 +46,22 @@ LinkedIn tells found in the last audit. Read the posts side by side as well;
 the biggest tell is the same opening or phrase showing up across personas.
 
 `npm test` runs the sanitizer and pipeline tests against a fake model.
+
+### Choosing the thinking level
+
+`lib/gemini.ts` sets a thinking level per pipeline stage (defaults: draft
+`low`, edit `low`, fit `minimal`). Override in Vercel with `GEMINI_THINKING`
+(one level for all stages) or `GEMINI_THINKING_DRAFT`, `GEMINI_THINKING_EDIT`,
+`GEMINI_THINKING_FIT`. Measure before changing:
+
+```
+GEMINI_API_KEY=... npm run bench
+```
+
+That runs the full pipeline for four personas under `minimal`, `low`,
+`medium`, `high` and a mixed `draft=medium,edit=low,fit=minimal`, records
+per-stage latency, fit rate and lint issues, has the model blind-score each
+post for naturalness, specificity and restraint, and writes
+`bench-output/summary.md` with a comparison table and every post side by
+side. Read the posts; the scores are a tie-breaker. Pass
+`--configs a,b --personas 8 --seeds 2` to widen the run.
