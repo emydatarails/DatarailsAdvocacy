@@ -37,7 +37,7 @@ export const MAX_CHARS = 800;
 // Models count words far more reliably than characters, so the prompts
 // budget in words and paragraphs. 105-125 words lands at roughly 620-740
 // characters, which leaves the edit pass room under the 800 ceiling.
-const WORD_BUDGET = "100 to 115 words";
+const WORD_BUDGET = "about 100 words, 120 at the very most";
 
 export const narrativeArchetypes = [
   {
@@ -210,7 +210,7 @@ export const endings = [
   "ends on something mundane a colleague said that is not a verdict on anything",
   "ends the moment the scene ends, one sentence after the last concrete action",
   "ends on a detail from outside the story that the writer noticed at the time, unconnected to the point",
-  "ends on what the writer is doing differently next month, stated as a plan, not a lesson",
+  "ends on one thing the writer will handle differently at the next close, stated as a plan, not a lesson, and not starting with the words next month",
 ];
 
 // What the move to the new setup cost, if it is mentioned at all. The blind
@@ -262,7 +262,7 @@ export const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 const overusedMoves = `
 PHRASES AND MOVES THAT ARE USED TO DEATH IN POSTS LIKE THIS (do not use any of them):
 - A lone number or single word as the opening line
-- "Tuesday" as the anchor day, or an office being "quiet" as the payoff
+- An office being "quiet" as the payoff
 - File names as a joke (anything like v7_FINAL, FINAL_final, use_this_one)
 - Cold coffee, a laptop open on a Sunday, "muscle memory"
 - "Honestly," or "Look," as the first word of the post or of a paragraph
@@ -426,7 +426,7 @@ export function buildEditPrompt(input: PostInput, draft: string): string {
   const chars = draft.length;
   const lengthNote =
     chars > MAX_CHARS
-      ? `The draft is ${chars} characters, which is ${chars - MAX_CHARS} over the ${MAX_CHARS} ceiling. Get it to about ${MAX_CHARS - 60}: remove ${Math.min(4, Math.ceil((chars - MAX_CHARS) / 80) + 1)} or more whole sentences, starting with setup and explanation, and tighten the rest. Keep the sentence naming @Datarails and the one honest, unflattering detail; cut around them.`
+      ? `The draft is ${chars} characters, which is ${chars - MAX_CHARS} over the ${MAX_CHARS} ceiling. Get it to about ${MAX_CHARS - 100}, not merely under ${MAX_CHARS}: remove ${Math.min(5, Math.ceil((chars - MAX_CHARS) / 70) + 2)} or more whole sentences, starting with setup and explanation, and tighten the rest. Count before you answer. Keep the sentence naming @Datarails and the one honest, unflattering detail; cut around them.`
       : chars < MIN_CHARS
         ? `The draft is ${chars} characters, under the ${MIN_CHARS} floor. Add one concrete detail to the existing scene. Do not add a new paragraph of reflection.`
         : `The draft is ${chars} characters. Keep it between ${MIN_CHARS} and ${MAX_CHARS}. Your edit must not make it longer; if you add a phrase, cut one.`;
