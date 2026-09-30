@@ -28,8 +28,10 @@ export type Llm = (prompt: string) => Promise<string>;
 
 export const MIN_CHARS = 600;
 export const MAX_CHARS = 800;
-// Ask for a little less than the ceiling so the edit pass has room.
-const TARGET_RANGE = "620 to 740";
+// Models count words far more reliably than characters, so the prompts
+// budget in words and paragraphs. 105-125 words lands at roughly 620-740
+// characters, which leaves the edit pass room under the 800 ceiling.
+const WORD_BUDGET = "105 to 125 words";
 
 export const narrativeArchetypes = [
   {
@@ -82,7 +84,7 @@ export const narrativeArchetypes = [
 export const styleInstructions: Record<string, string> = {
   punchy: `
 FORMAT RULES FOR THIS STYLE:
-- Short paragraphs, one to three lines, with a blank line between them.
+- Five or six short paragraphs, one to three lines each, with a blank line between them.
 - Mostly complete sentences. At most two fragments of one to three words in the whole post; more than that reads as a template.
 - Open with a statement, not a question and not "I was".
 - One longer sentence somewhere that carries the actual story.
@@ -91,7 +93,7 @@ FORMAT RULES FOR THIS STYLE:
   professional: `
 FORMAT RULES FOR THIS STYLE:
 - Measured and specific. Authority comes from detail, never from adjectives.
-- Two to four sentence paragraphs, three or four paragraphs in total. That is the whole post; the length cap is strict.
+- Three paragraphs of two or three sentences each. That is the whole post. A fourth paragraph means something else has to go.
 - Write like a senior person who is comfortable being plain.
 - Competence shows in the story. No self-congratulation, no lesson at the end.`,
 
@@ -99,27 +101,27 @@ FORMAT RULES FOR THIS STYLE:
 FORMAT RULES FOR THIS STYLE:
 - Write like a message to a smart colleague who already knows the context.
 - Informal, not flippant. Contractions are fine. Interjections like "honestly" or "look" are fine at most once, and not as the first word.
-- Short to medium paragraphs, conversational rhythm.
+- Three or four short paragraphs, conversational rhythm.
 - It should read like it was typed in fifteen minutes because the writer wanted to say it, not because they wanted to post something.`,
 
   detailed: `
 FORMAT RULES FOR THIS STYLE:
 - "Detailed" means texture, not length. The character cap still applies, so spend the words on specifics and cut everything generic.
-- A real arc in three or four paragraphs: setup, the moment it turned, where things stand.
+- A real arc in exactly three paragraphs: setup, the moment it turned, where things stand.
 - Small true-sounding details (which system, which day of close, who was waiting) do the work.
 - End on a plain reflection, not a call to action and not a one-line slogan.`,
 };
 
 export const openingPatterns = [
   "Open cold, mid-scene. No stage setting. The reader arrives in the middle of a moment that is already happening.",
-  "Open with a count of something mundane that the writer only noticed later: exports, tabs, sign-offs, reminders. One sentence, then move on.",
+  "Open with a count of something mundane that the writer only noticed later: exports, tabs, sign-offs, reminders. A full sentence, never a bare number, then move on.",
   "Open with the question a leader, auditor or board member asked, in their words, then answer it in one line.",
   "Open with a recurring task that used to eat a specific evening or weekend. Name the task, not the feeling.",
-  "Open with a short plain sentence about what the writer used to believe about their own process. Then take it apart.",
+  "Open with a belief the writer held about their own process, stated the way they would have said it in a meeting at the time. Do not start with 'For years' or 'I used to'. Then take it apart.",
   "Open on something a colleague said. Just the remark, then the context.",
   "Open with the absence of something: a message that did not arrive, a meeting that did not slip, a file nobody asked for.",
   "Open with the result, stated flatly, then go back and earn it.",
-  "Open with what the writer got wrong for years, in one sentence, without drama.",
+  "Open with a concrete thing the writer did every month that, in hindsight, was the problem. Name the task in the first sentence; do not start with 'For years' or 'I used to'.",
   "Open in the middle of explaining something to a new hire or an auditor.",
   "Open with the calendar: budget season, year-end, the first close after a change. Place the reader in that stretch of the year.",
   "Open with a small physical action at the desk: closing a laptop, deleting a folder, leaving a tab open out of habit.",
@@ -182,6 +184,8 @@ PHRASES AND MOVES THAT ARE USED TO DEATH IN POSTS LIKE THIS (do not use any of t
 - "What changed wasn't the numbers, it was X", "the real number is", "that's the number on the slide"
 - "That surprised me more than the numbers"
 - "Not X. Y." contrast constructions more than once in the post
+- "Nobody" as the payoff word ("nobody asked", "nobody noticed", "nobody was waiting") more than once
+- "For years I assumed", "For years I believed", "I used to think" as the first words
 - A closing line that sounds like an aphorism or a bumper sticker
 - Any sentence that could be lifted from a case study or a vendor page`;
 
@@ -245,6 +249,7 @@ This overrides whatever opening you would reach for by default. Do not open with
 ${styleGuide}
 
 HOW REAL PEOPLE WRITE THIS KIND OF POST:
+- This is a short post. One scene, one admission, one change. Not everything in the brief has to appear; pick what fits the scene and leave the rest out.
 - One concrete scene anchors everything. Which system, which report, which day of the process, who was waiting. Not "reporting was painful" but the specific afternoon it was.
 - Details should belong to this industry and role. A controller in manufacturing and an analyst in retail do not have the same bad day.
 - Mix sentence lengths. A long sentence that carries a whole thought, then a short one. Never three sentences of the same length in a row.
@@ -263,7 +268,7 @@ game-changer, revolutionize, synergy, leverage, streamline, empower, unlock, tra
 
 HARD REQUIREMENTS:
 - First person throughout.
-- Length: ${TARGET_RANGE} characters. Hard floor ${MIN_CHARS}, hard ceiling ${MAX_CHARS}. Count before you answer; if you are over, cut a sentence rather than compressing everything.
+- Length: ${WORD_BUDGET} in total, following the paragraph count in the format rules. That is about ${MIN_CHARS} to ${MAX_CHARS} characters, and the ceiling is enforced, so when in doubt write less. Count the words before you answer and cut whole sentences if you are over.
 - No hashtags anywhere. Not at the end, not inline. Not one.
 - No emojis, no bullet points, no headings, no bold, no markdown of any kind.
 - No em-dashes or en-dashes. Use a comma, a colon, a full stop or a plain hyphen.
@@ -277,12 +282,16 @@ export function buildEditPrompt(input: PostInput, draft: string): string {
   const chars = draft.length;
   const lengthNote =
     chars > MAX_CHARS
-      ? `The draft is ${chars} characters, which is over the ${MAX_CHARS} ceiling. Cut whole sentences until it fits. Do not compress every sentence; remove the least specific ones.`
+      ? `The draft is ${chars} characters, which is ${chars - MAX_CHARS} over the ${MAX_CHARS} ceiling. Remove at least ${Math.ceil((chars - MAX_CHARS) / 60) + 1} whole sentences, starting with the least specific ones, so it lands near ${MAX_CHARS - 60}. Do not compress every sentence.`
       : chars < MIN_CHARS
         ? `The draft is ${chars} characters, under the ${MIN_CHARS} floor. Add one concrete detail to the existing scene. Do not add a new paragraph of reflection.`
         : `The draft is ${chars} characters. Keep it between ${MIN_CHARS} and ${MAX_CHARS}. Your edit must not make it longer; if you add a phrase, cut one.`;
 
-  return `You are editing a LinkedIn post so it reads like the finance professional who lived it typed it themselves. Light touch. Keep every sentence that already sounds like a person; change only what sounds generated.
+  return `You are editing a LinkedIn post so it reads like the finance professional who lived it typed it themselves. Two jobs, in this order: get the length right, then remove anything that sounds generated. Beyond those two jobs, keep every sentence that already sounds like a person.
+
+LENGTH (this comes first, it is a hard limit):
+${lengthNote}
+Count the characters of your final answer before you return it. A post over ${MAX_CHARS} characters is rejected, however good it reads.
 
 WHO WROTE IT:
 ${describePerson(input)}
@@ -290,9 +299,6 @@ ${describePerson(input)}
 
 DRAFT:
 ${draft}
-
-LENGTH:
-${lengthNote}
 
 WHAT TO FIX, IN ORDER:
 
@@ -327,7 +333,7 @@ export function buildFitPrompt(post: string): string {
   const chars = post.length;
   const direction =
     chars > MAX_CHARS
-      ? `It is ${chars} characters and must be at most ${MAX_CHARS}. Remove whole sentences, starting with the least specific ones, until it fits. Do not rewrite the sentences you keep.`
+      ? `It is ${chars} characters and must be at most ${MAX_CHARS}. Remove whole sentences, starting with the least specific ones, until it is under ${MAX_CHARS - 40}. Removing one sentence is rarely enough; count after each cut. Do not rewrite the sentences you keep.`
       : `It is ${chars} characters and must be at least ${MIN_CHARS}. Add one or two concrete sentences that belong to the existing scene. Do not add a new paragraph of reflection or a conclusion.`;
 
   return `Adjust the length of this LinkedIn post. ${direction}
@@ -336,7 +342,7 @@ POST:
 ${post}
 
 Rules:
-- Keep the @Datarails mention in the body.
+- Keep the @Datarails mention in the body, with at least one sentence after it.
 - Keep the first-person voice and everything else exactly as it is.
 - No hashtags, no emojis, no markdown, no em-dashes.
 - Return only the post text, nothing else.`.trim();
@@ -347,15 +353,27 @@ function inRange(text: string): boolean {
 }
 
 // Last resort when the model will not cooperate on length: drop trailing
-// paragraphs while the post is over the ceiling, as long as what remains is
-// still a valid post.
+// sentences, then trailing paragraphs, while the post is over the ceiling,
+// as long as what remains is still a valid post.
 export function trimToLimit(text: string): string {
-  let paragraphs = text.split(/\n\s*\n/);
-  while (paragraphs.length > 1) {
-    const joined = paragraphs.join("\n\n");
-    if (joined.length <= MAX_CHARS) break;
+  const valid = (t: string) => t.length >= MIN_CHARS && t.includes("@Datarails");
+  let current = text;
+  // Sentence level: peel the last sentence off the last paragraph.
+  for (let i = 0; i < 12 && current.length > MAX_CHARS; i++) {
+    const paragraphs = current.split(/\n\s*\n/);
+    const last = paragraphs[paragraphs.length - 1];
+    const sentences = last.match(/[^.!?]+[.!?]+["”']?(\s+|$)/g) || [];
+    if (sentences.length <= 1) break;
+    const shorterLast = sentences.slice(0, -1).join("").trimEnd();
+    const candidate = [...paragraphs.slice(0, -1), shorterLast].join("\n\n");
+    if (!valid(candidate)) break;
+    current = candidate;
+  }
+  // Paragraph level.
+  let paragraphs = current.split(/\n\s*\n/);
+  while (paragraphs.length > 1 && paragraphs.join("\n\n").length > MAX_CHARS) {
     const shorter = paragraphs.slice(0, -1).join("\n\n");
-    if (shorter.length < MIN_CHARS || !shorter.includes("@Datarails")) break;
+    if (!valid(shorter)) break;
     paragraphs = paragraphs.slice(0, -1);
   }
   return paragraphs.join("\n\n");
@@ -384,7 +402,9 @@ export async function generatePost(input: PostInput, llm: Llm): Promise<Generate
 
   let post = edited;
   let fitted = false;
-  if (!inRange(post)) {
+  // The fit pass usually lands in one go; a second attempt catches the
+  // "removed one sentence, still 5 over" case before code has to cut.
+  for (let attempt = 0; attempt < 2 && !inRange(post); attempt++) {
     const fittedRaw = sanitizePost((await llm(buildFitPrompt(post))) || "");
     if (fittedRaw && fittedRaw.includes("@Datarails")) {
       post = fittedRaw;

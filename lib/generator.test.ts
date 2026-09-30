@@ -43,7 +43,7 @@ test("hashtags, markdown, commentary and dashes never reach the caller", async (
       return `Here is the post:\n\n**${body(650)}** — done.\n\n#FPA #Finance #Datarails`;
     }
     // Edit pass echoes the draft, adds an inline hashtag and an en-dash.
-    const draft = prompt.split("DRAFT:\n")[1].split("\n\nLENGTH:")[0];
+    const draft = prompt.split("DRAFT:\n")[1].split("\n\nWHAT TO FIX")[0];
     return `${draft} Closed early – #winning`;
   };
   const { post } = await generatePost(input, llm);
@@ -64,6 +64,7 @@ test("an over-length edit triggers the fit pass and lands in range", async () =>
   };
   const { post, fitted } = await generatePost(input, llm);
   assert.equal(fitCalls, 1);
+  void MIN_CHARS;
   assert.ok(fitted);
   assert.ok(post.length >= MIN_CHARS && post.length <= MAX_CHARS);
 });
@@ -78,6 +79,16 @@ test("if the fit pass also fails, trailing paragraphs are dropped", async () => 
   const { post } = await generatePost(input, llm);
   assert.ok(post.length <= MAX_CHARS, `still too long: ${post.length}`);
   assert.ok(post.includes("@Datarails"));
+});
+
+test("trimToLimit peels trailing sentences before whole paragraphs", () => {
+  const first = body(500);
+  const last = "One more sentence here. And another one that pushes it over the line for sure. Final sentence that should go.";
+  const text = `${first}\n\n${last.repeat(4)}`;
+  const out = trimToLimit(text);
+  assert.ok(out.length <= MAX_CHARS, `${out.length}`);
+  assert.ok(out.startsWith(first));
+  assert.ok(out.split("\n\n").length === 2, "kept the second paragraph, shortened");
 });
 
 test("trimToLimit never drops the paragraph holding the tag", () => {
