@@ -235,3 +235,37 @@ gains come from reading real output, not from more rules: run
 `npm run personas`, read the posts side by side, and add any recurring
 phrase to the overused list in `lib/generator.ts` or a pattern to
 `promoTells` in `lib/lint.ts`.
+
+## Correction: advocacy, not neutrality
+
+The brand-deletion test in the previous section went too far. It produced
+posts a hostile reader could not call testimonials because the tool did
+nothing in them, and a post in which the tool does nothing is not a
+customer advocacy post. The goal is a recommendation from a peer: someone
+who is glad they use Datarails and says what it changed, on which day,
+with the detail that made them notice.
+
+The prompts were recalibrated:
+
+- The tool is allowed to be the reason something got better, stated in
+  concrete terms rather than adjectives.
+- The real outcomes from the wizard are kept (at most two, woven into the
+  story, one percentage at most) instead of being suppressed.
+- Saying you would tell a peer to look at it is fine; telling the reader
+  what to do is not.
+- The caveat (something still ordinary) is optional, used when it fits.
+- The detector keeps only copy tells: calls to action, prospect-facing
+  address, superlatives, press-release register, product-talk, slogans,
+  exclamation marks, stacked figures. Liking the product and attributing
+  a result to it are no longer flagged.
+
+What carries over unchanged from the earlier rounds: everything about
+sounding like a person rather than a model (no quoted examples, rotated
+worlds, no first names, no fragment chains, no morals, no rewards, length
+enforcement, hashtags stripped) and the lesson that any single mandatory
+beat becomes a template.
+
+The right evaluation from here is two axes, not one: does it read as a
+person (authentic), and does it actually recommend the product
+(advocacy). A post that scores well on the first and poorly on the second
+is the failure mode of the previous section.
