@@ -14,7 +14,7 @@
 //   quiet office, a lone number, a CFO question) shows up in most posts.
 // - The edit pass must know the target length, or it grows the post.
 
-import { sanitizePost } from "./sanitize";
+import { sanitizePost } from "./sanitize.js";
 
 export interface PostInput {
   profession: string;

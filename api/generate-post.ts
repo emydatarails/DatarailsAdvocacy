@@ -1,6 +1,10 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { GoogleGenAI } from "@google/genai";
-import { generatePost, type PostInput } from "../lib/generator";
+import { generatePost, type PostInput } from "../lib/generator.js";
+
+// The pipeline makes two to four model calls; the default 10s function
+// timeout is not enough for that.
+export const maxDuration = 60;
 
 const genAI = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY || "",

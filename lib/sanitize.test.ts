@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { sanitizePost, stripHashtags, replaceDashes } from "./sanitize";
+import { sanitizePost, stripHashtags, replaceDashes } from "./sanitize.js";
 
 test("removes a trailing hashtag block", () => {
   const out = stripHashtags("Body text here.\n\n#FPA #Finance #Datarails");

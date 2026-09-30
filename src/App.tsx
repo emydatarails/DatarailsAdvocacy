@@ -798,10 +798,14 @@ function AIAssistant() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.post) {
+        throw new Error(data.error || `Generation failed (${response.status})`);
+      }
       setGeneratedPost(data.post);
     } catch (err) {
       console.error(err);
+      alert(err instanceof Error ? err.message : 'Failed to generate post. Please try again.');
     } finally {
       setLoading(false);
     }

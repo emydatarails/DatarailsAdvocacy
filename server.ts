@@ -4,7 +4,7 @@ import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import { google } from "googleapis";
 import dotenv from "dotenv";
-import { generatePost, type PostInput } from "./lib/generator";
+import { generatePost, type PostInput } from "./lib/generator.js";
 
 dotenv.config();
 
