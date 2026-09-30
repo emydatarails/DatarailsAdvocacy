@@ -793,11 +793,20 @@ function AIAssistant() {
         specificMoment: [...formData.specificMoments, customMoment].filter(Boolean).join(', '),
         keyOutcome: [...resolvedOutcomes, customOutcome].filter(Boolean).join(', '),
       };
-      const response = await fetch('/api/generate-post', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      // Never leave the loading overlay up forever: give up after 2 minutes.
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 120_000);
+      let response: Response;
+      try {
+        response = await fetch('/api/generate-post', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timer);
+      }
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data.post) {
         throw new Error(data.error || `Generation failed (${response.status})`);
@@ -805,7 +814,10 @@ function AIAssistant() {
       setGeneratedPost(data.post);
     } catch (err) {
       console.error(err);
-      alert(err instanceof Error ? err.message : 'Failed to generate post. Please try again.');
+      const timedOut = err instanceof DOMException && err.name === 'AbortError';
+      alert(timedOut
+        ? 'Generation is taking too long. Please try again.'
+        : err instanceof Error ? err.message : 'Failed to generate post. Please try again.');
     } finally {
       setLoading(false);
     }

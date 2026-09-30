@@ -1,10 +1,10 @@
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
-import { GoogleGenAI } from "@google/genai";
 import { google } from "googleapis";
 import dotenv from "dotenv";
 import { generatePost, type PostInput } from "./lib/generator.js";
+import { createGeminiLlm } from "./lib/gemini.js";
 
 dotenv.config();
 
@@ -13,23 +13,7 @@ const PORT = 3000;
 
 app.use(express.json());
 
-// Initialize Gemini API
-const genAI = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY || "",
-  httpOptions: {
-    headers: {
-      'User-Agent': 'aistudio-build',
-    }
-  }
-});
-
-async function gemini(prompt: string): Promise<string> {
-  const response = await genAI.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: prompt,
-  });
-  return response.text || "";
-}
+const gemini = createGeminiLlm(process.env.GEMINI_API_KEY || "");
 
 // API Routes
 app.post("/api/generate-post", async (req, res) => {

@@ -152,13 +152,8 @@ function arg(name: string, fallback?: string): string | undefined {
 }
 
 async function geminiLlm(prompt: string): Promise<string> {
-  const { GoogleGenAI } = await import("@google/genai");
-  const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
-  const r = await genAI.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: prompt,
-  });
-  return r.text || "";
+  const { createGeminiLlm } = await import("../lib/gemini.js");
+  return createGeminiLlm(process.env.GEMINI_API_KEY || "")(prompt);
 }
 
 async function main() {

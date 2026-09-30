@@ -1,27 +1,11 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { GoogleGenAI } from "@google/genai";
 import { generatePost, type PostInput } from "../lib/generator.js";
+import { createGeminiLlm } from "../lib/gemini.js";
 
-// The pipeline makes two to four model calls; the default 10s function
-// timeout is not enough for that.
-export const maxDuration = 60;
+// The pipeline makes up to three model calls of at most 40s each.
+export const maxDuration = 120;
 
-const genAI = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY || "",
-  httpOptions: {
-    headers: {
-      "User-Agent": "aistudio-build",
-    },
-  },
-});
-
-async function gemini(prompt: string): Promise<string> {
-  const response = await genAI.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: prompt,
-  });
-  return response.text || "";
-}
+const gemini = createGeminiLlm(process.env.GEMINI_API_KEY || "");
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {

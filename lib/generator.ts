@@ -2,8 +2,8 @@
 // server.ts (local dev). Keep all prompt text here so the two entry points
 // never drift apart.
 //
-// Pipeline: draft -> sanitize -> edit pass -> sanitize -> (fit pass if the
-// length is off) -> sanitize -> last-resort trim. The prompts ask for clean
+// Pipeline: draft -> sanitize -> edit pass -> sanitize -> (one fit pass if
+// the length is off) -> sanitize -> last-resort trim. The prompts ask for clean
 // output; the code guarantees it (no hashtags, no em-dashes, no markdown,
 // no commentary, length inside the window).
 //
@@ -402,9 +402,9 @@ export async function generatePost(input: PostInput, llm: Llm): Promise<Generate
 
   let post = edited;
   let fitted = false;
-  // The fit pass usually lands in one go; a second attempt catches the
-  // "removed one sentence, still 5 over" case before code has to cut.
-  for (let attempt = 0; attempt < 2 && !inRange(post); attempt++) {
+  // One fit attempt only: each model call costs seconds of latency, and
+  // trimToLimit below handles the "removed one sentence, still 5 over" case.
+  if (!inRange(post)) {
     const fittedRaw = sanitizePost((await llm(buildFitPrompt(post))) || "");
     if (fittedRaw && fittedRaw.includes("@Datarails")) {
       post = fittedRaw;
