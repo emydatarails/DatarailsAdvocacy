@@ -136,3 +136,42 @@ configuration is the one to compare against the all-`low` default.
 
 The wizard's overlay now names the stage as time passes (draft, editing,
 trimming) so a 20 to 40 second wait reads as progress.
+
+## Ad tone: two blind reviews
+
+Method: twelve fresh posts, anonymised, handed to a reviewer given no
+context except "you are a finance professional allergic to sponsored
+customer stories; score 1 (a person) to 5 (a testimonial)".
+
+| | Review 1 | Review 2 (after fixes) |
+|---|---|---|
+| Mean score | 3.2 | 2.6 |
+| Posts scored 4 or 5 | 5 | 0 |
+| Posts scored 2 | 3 | 5 |
+
+Review 1 named the causes, and each traced back to one of the prompt's own
+instructions being applied uniformly, which is the recurring lesson of
+this audit: any single mandatory beat becomes a template at corpus scale.
+
+| What the reviewer saw | Where it came from | Fix |
+|---|---|---|
+| "X still comes in by hand" confession in the same slot in 8 of 12 | "include one thing that is still imperfect" | rotate seven kinds of honest element, placed anywhere |
+| Wholesome reward as the last line in 8 of 12 (went home, walked the dog) | "end on the writer's own life" | rotate seven endings, none a reward or a moral |
+| Before/after mirrored at the same date in 7 | "two scenes" archetype | forbidden explicitly |
+| A junior who had already built it in the tool in 6 | "the team, not me" archetype | archetype reworded; move banned |
+| Someone on leave as the inciting incident in 5 | free choice | banned |
+| Quoted brand sentence identical across posts | quoted examples in the prompt | examples removed; six described mention styles rotated |
+
+Review 2 found the next layer: "I built the mappings myself over two
+weekends" in 10 of 12 (from "the writer did the setup themselves"),
+unfinished final sentences (from "end mid-thought"), "board pack Thursday"
+in 9, the same colleague name and the same plant in two posts each, and a
+colleague's quoted line delivering the point. The prompt now rotates the
+setup cost (including saying nothing), the deadline, a region, a source
+system and a weekday, uses roles instead of first names, and reworks the
+endings again. The detector catches the demo-script lines the reviewer
+quoted so they trigger the de-pitch pass.
+
+What the reviewer asked for that is not done: dropping the @Datarails tag
+in some posts. The tag is a requirement of the advocacy programme, so it
+stays in every post; the mention style rotates instead.
