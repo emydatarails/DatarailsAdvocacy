@@ -948,7 +948,7 @@ function AIAssistant() {
             margin: 0,
             letterSpacing: '-0.01em',
           }}>
-            {loadingStage}
+            Writing your personal draft and making sure it's awesome
           </p>
 
           {/* Patience hint */}
@@ -963,7 +963,7 @@ function AIAssistant() {
             margin: '-16px 0 0',
             letterSpacing: '0.01em',
           }}>
-            Usually 20 to 40 seconds. Please don't refresh the page!
+            {loadingStage}. Usually 20 to 40 seconds, please don't refresh the page!
           </p>
 
           {/* Bouncing dots */}
