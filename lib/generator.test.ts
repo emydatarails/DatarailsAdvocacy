@@ -101,7 +101,7 @@ test("trimToLimit never drops the paragraph holding the tag", () => {
 test("a promotional edit triggers the de-pitch pass, a clean one does not", async () => {
   let depitchCalls = 0;
   const clean = body(700);
-  const promo = clean.replace("hoped the intercompany", "and thanks to @Datarails hoped the intercompany");
+  const promo = clean.replace("hoped the intercompany", "@Datarails is a game changer and hoped the intercompany");
   const llm = async (prompt: string, stage: string) => {
     if (stage === "draft") return clean;
     if (stage === "edit") return promo;
@@ -130,7 +130,7 @@ test("prompts carry no quoted brand sentence to copy", () => {
   const p = buildDraftPrompt(input, pickDraftContext());
   assert.ok(!/lives in @Datarails/.test(p));
   assert.ok(!/moved consolidation into @Datarails/.test(p));
-  assert.match(p, /THIS IS NOT AN AD/);
+  assert.match(p, /AUTHENTIC, NOT COPY/);
 });
 
 test("a garbage edit pass falls back to the draft", async () => {
