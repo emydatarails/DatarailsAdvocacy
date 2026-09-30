@@ -12,6 +12,8 @@
 //       archetype/opening/trigger/voice is derived from the seed.
 //   npx tsx scripts/persona-run.ts prompt --persona K --stage 2 --draft FILE
 //       Prints the stage-2 (edit) prompt for a draft (after sanitizing it).
+//   npx tsx scripts/persona-run.ts prompt --persona K --stage depitch --draft FILE
+//       Prints the de-pitch prompt for a post, or says it would not run.
 //   npx tsx scripts/persona-run.ts prompt --persona K --stage 3 --draft FILE
 //       Prints the stage-3 (length fit) prompt for a post.
 //   npx tsx scripts/persona-run.ts sanitize FILE
@@ -29,6 +31,7 @@ import fs from "fs";
 import path from "path";
 import {
   buildDraftPrompt,
+  buildDepitchPrompt,
   buildEditPrompt,
   buildFitPrompt,
   generatePost,
@@ -36,12 +39,13 @@ import {
   openingPatterns,
   postTriggers,
   sceneSeeds,
+  mentionStyles,
   writerVoices,
   type DraftContext,
   type PostInput,
 } from "../lib/generator.js";
 import { sanitizePost } from "../lib/sanitize.js";
-import { lintPost } from "../lib/lint.js";
+import { lintPost, promoTells } from "../lib/lint.js";
 
 // Realistic personas that mirror what the wizard in src/App.tsx sends:
 // profession + industry chips, 1-3 moments joined by ", ", 0-3 outcomes
@@ -149,6 +153,7 @@ export function contextForSeed(seed: number): DraftContext {
     postTrigger: seededPick(postTriggers, seed, 3),
     writerVoice: seededPick(writerVoices, seed, 4),
     sceneSeed: seededPick(sceneSeeds, seed, 5),
+    mentionStyle: seededPick(mentionStyles, seed, 6),
   };
 }
 
@@ -259,7 +264,7 @@ async function bench() {
         fs.writeFileSync(path.join(dir, `${key}_${seed}.txt`), result.post);
         console.log(
           `${config.padEnd(34)} ${key.padEnd(36)} ${String(totalMs).padStart(6)}ms ` +
-            `(d ${result.timings.draft} / e ${result.timings.edit} / f ${result.timings.fit})  ` +
+            `(d ${result.timings.draft} / e ${result.timings.edit} / p ${result.timings.depitch} / f ${result.timings.fit})  ` +
             `${result.post.length} chars  ${lint.issues.length} lint` +
             (row.judge ? `  judge ${row.judge.natural}/${row.judge.specific}/${row.judge.restraint}` : ""),
         );
@@ -332,6 +337,14 @@ async function main() {
     } else if (stage === "2") {
       const draft = sanitizePost(fs.readFileSync(arg("draft")!, "utf8"));
       process.stdout.write(buildEditPrompt(persona, draft));
+    } else if (stage === "depitch") {
+      const post = sanitizePost(fs.readFileSync(arg("draft")!, "utf8"));
+      const tells = promoTells(post);
+      if (!tells.length) {
+        process.stderr.write("no promo tells; de-pitch pass would not run\n");
+        return;
+      }
+      process.stdout.write(buildDepitchPrompt(persona, post, tells));
     } else {
       const post = sanitizePost(fs.readFileSync(arg("draft")!, "utf8"));
       process.stdout.write(buildFitPrompt(post));
@@ -342,7 +355,8 @@ async function main() {
   if (mode === "sanitize") {
     const out = sanitizePost(fs.readFileSync(process.argv[3], "utf8"));
     process.stdout.write(out);
-    process.stderr.write(`\n[${out.length} chars]\n`);
+    const tells = promoTells(out);
+    process.stderr.write(`\n[${out.length} chars${tells.length ? `; promo tells: ${tells.join(" | ")}` : ""}]\n`);
     return;
   }
 

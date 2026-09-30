@@ -2,8 +2,9 @@
 // server.ts (local dev). Keep all prompt text here so the two entry points
 // never drift apart.
 //
-// Pipeline: draft -> sanitize -> edit pass -> sanitize -> (one fit pass if
-// the length is off) -> sanitize -> last-resort trim. The prompts ask for clean
+// Pipeline: draft -> sanitize -> edit pass -> sanitize -> (de-pitch pass if
+// the post still reads as an ad) -> (one fit pass if the length is off) ->
+// sanitize -> last-resort trim. The prompts ask for clean
 // output; the code guarantees it (no hashtags, no em-dashes, no markdown,
 // no commentary, length inside the window).
 //
@@ -14,6 +15,7 @@
 //   quiet office, a lone number, a CFO question) shows up in most posts.
 // - The edit pass must know the target length, or it grows the post.
 
+import { promoTells } from "./lint.js";
 import { sanitizePost } from "./sanitize.js";
 
 export interface PostInput {
@@ -24,7 +26,7 @@ export interface PostInput {
   keyOutcome: string;
 }
 
-export type Stage = "draft" | "edit" | "fit";
+export type Stage = "draft" | "edit" | "depitch" | "fit";
 
 // The stage lets the adapter pick a thinking level per call: the draft is
 // where reasoning pays off, the edit and fit passes are mechanical.
@@ -172,6 +174,18 @@ export const sceneSeeds = [
   "the week the team was short-staffed and everything landed on one person",
 ];
 
+// How the brand appears in the post. One is picked per post so the mention
+// does not converge on a single stock phrase. Described, never quoted: a
+// quoted example would be copied into every post.
+export const mentionStyles = [
+  "as a place where a specific report or model now sits, named once in passing, the way you would name a folder or a system",
+  "inside a sentence about a colleague doing something themselves, where the brand is just where they did it",
+  "as the thing the writer doubted, named at the point the doubt showed up",
+  "in the middle of a list of the systems involved in the story, with no more weight than the ERP or the ledger",
+  "as the thing the team moved one specific process into, in the past tense, with what stopped happening as a result",
+  "as what was on screen during the scene, named once, then never mentioned again",
+];
+
 // Recurring tells from the persona audit. Any one of these is fine in a
 // single post; across fifty posts they read as one machine. Both prompts
 // carry this list.
@@ -190,6 +204,8 @@ PHRASES AND MOVES THAT ARE USED TO DEATH IN POSTS LIKE THIS (do not use any of t
 - "Not X. Y." contrast constructions more than once in the post
 - "Nobody" as the payoff word ("nobody asked", "nobody noticed", "nobody was waiting") more than once
 - "For years I assumed", "For years I believed", "I used to think" as the first words
+- "the version that lives in", "since we moved consolidation into", "pulls their own numbers" as the brand sentence
+- A colleague "doing it themselves" as the payoff more than once
 - A closing line that sounds like an aphorism or a bumper sticker
 - Any sentence that could be lifted from a case study or a vendor page`;
 
@@ -199,6 +215,7 @@ export interface DraftContext {
   postTrigger: string;
   writerVoice: string;
   sceneSeed: string;
+  mentionStyle: string;
 }
 
 export function pickRandom<T>(arr: T[]): T {
@@ -212,6 +229,7 @@ export function pickDraftContext(): DraftContext {
     postTrigger: pickRandom(postTriggers),
     writerVoice: pickRandom(writerVoices),
     sceneSeed: pickRandom(sceneSeeds),
+    mentionStyle: pickRandom(mentionStyles),
   };
 }
 
@@ -224,7 +242,7 @@ function describePerson(input: PostInput): string {
 
 export function buildDraftPrompt(input: PostInput, ctx: DraftContext): string {
   const { style } = input;
-  const { archetype, openingPattern, postTrigger, writerVoice, sceneSeed } = ctx;
+  const { archetype, openingPattern, postTrigger, writerVoice, sceneSeed, mentionStyle } = ctx;
   const styleGuide = styleInstructions[style as string] || styleInstructions.professional;
 
   return `You are ghostwriting a LinkedIn post for a finance professional about their real experience using Datarails. It has to read like something they typed themselves in one sitting: not a press release, not a testimonial, not a "thought leadership" post. A real person, being specific about their own work.
@@ -259,8 +277,14 @@ HOW REAL PEOPLE WRITE THIS KIND OF POST:
 - Mix sentence lengths. A long sentence that carries a whole thought, then a short one. Never three sentences of the same length in a row.
 - Starting a sentence with "And", "But" or "So" is fine.
 - Include one small unflattering admission: a workaround, a doubt, a thing they got wrong. One, not three.
-- The @Datarails mention sits inside a sentence about what the team did ("since we moved consolidation into @Datarails", "the version that lives in @Datarails"). Never as a shout-out, never in the last two sentences.
+- Mention @Datarails exactly once, ${mentionStyle}. It is never the subject of a sentence and never the reason something is good: the writer and the team do things, the brand is where or with what. Never "with @Datarails", "thanks to @Datarails", "@Datarails lets us". Never in the last two sentences.
 - Do not explain what Datarails is or list features. Only what changed for this person and their team.
+
+THIS IS NOT AN AD. A reader should be unable to tell whether the writer likes the vendor:
+- The outcome phrases in the brief are marketing language. Do not reuse their wording. Translate each into what the writer saw and could point to on a calendar or a screen, or leave it out.
+- Include one thing that did not change or still annoys the writer. Real people always have one. It is not undercut afterwards.
+- No recommendation, no invitation, no advice to the reader, no "if you're dealing with", no exclamation marks, no gratitude to the vendor.
+- The post ends on the writer's own life or work, never on the product.
 
 NUMBERS:
 - The outcomes above may contain percentages. Use at most one of them as a stated figure. Express the rest in lived terms (two days instead of five, one folder instead of thirty files, an evening back) or leave them out.
@@ -320,6 +344,8 @@ WHAT TO FIX, IN ORDER:
 3. Rhythm. If sentences are all roughly the same length, vary them: one long sentence that carries a thought, then a short one. Do not create fragment chains to do this.
 
 4. Voice. The post needs one opinion or reaction that is clearly this person's, and one detail only someone in that job would mention. If the draft already has both, leave them alone. If it lacks them, add one of each in the writer's own register. Do not add slang, do not add jokes, do not add a lesson.
+
+5. Pitch check. Read it once more as a skeptical peer who assumes the vendor asked for this post. Any sentence that could be pasted into a vendor testimonial gets rewritten as a plain observation of what happened, or cut. @Datarails must appear exactly once, never as the subject of a sentence, never as the reason something is good, never in the last two sentences. If the post has no moment where something is still imperfect or unchanged, add one short one in the writer's register. No exclamation marks.
 ${overusedMoves}
 
 HARD REQUIREMENTS:
@@ -331,6 +357,25 @@ HARD REQUIREMENTS:
 - No bracket placeholders.
 - Do not wrap the post in quotation marks.
 - Return only the final post text. No preamble, no commentary, no character count.`.trim();
+}
+
+export function buildDepitchPrompt(input: PostInput, post: string, tells: string[]): string {
+  return `This LinkedIn post by a ${input.profession} in ${input.industry} reads like an advertisement in places. Rewrite only the offending sentences so it reads like a person describing their own work. Keep everything else word for word.
+
+POST:
+${post}
+
+WHAT READS AS AN AD:
+${tells.map((t) => `- ${t}`).join("\n")}
+
+Rules for the rewrite:
+- The writer and their colleagues do things; @Datarails is only where or with what. It is never the subject of a sentence and never the reason something is good.
+- @Datarails appears exactly once, not in the last two sentences.
+- No recommendations, no invitations, no advice to the reader, no exclamation marks, no gratitude.
+- At most one percentage in the whole post; say the rest in days, evenings, files or people, or drop it.
+- Keep the length within ${MIN_CHARS} to ${MAX_CHARS} characters.
+- No hashtags, no emojis, no markdown, no em-dashes.
+- Return only the post text.`.trim();
 }
 
 export function buildFitPrompt(post: string): string {
@@ -388,6 +433,7 @@ export interface GenerateResult {
   draft: string;
   edited: string;
   fitted: boolean;
+  depitched: boolean;
   context: DraftContext;
   /** Wall-clock milliseconds spent in each model call (0 if it did not run). */
   timings: Record<Stage, number>;
@@ -395,7 +441,7 @@ export interface GenerateResult {
 
 export async function generatePost(input: PostInput, llm: Llm): Promise<GenerateResult> {
   const context = pickDraftContext();
-  const timings: Record<Stage, number> = { draft: 0, edit: 0, fit: 0 };
+  const timings: Record<Stage, number> = { draft: 0, edit: 0, depitch: 0, fit: 0 };
   const timed = async (stage: Stage, prompt: string) => {
     const started = Date.now();
     try {
@@ -407,7 +453,7 @@ export async function generatePost(input: PostInput, llm: Llm): Promise<Generate
 
   const draft = sanitizePost(await timed("draft", buildDraftPrompt(input, context)));
   if (!draft) {
-    return { post: "", draft: "", edited: "", fitted: false, context, timings };
+    return { post: "", draft: "", edited: "", fitted: false, depitched: false, context, timings };
   }
 
   const editedRaw = await timed("edit", buildEditPrompt(input, draft));
@@ -417,6 +463,18 @@ export async function generatePost(input: PostInput, llm: Llm): Promise<Generate
 
   let post = edited;
   let fitted = false;
+  let depitched = false;
+
+  // Only pay for a de-pitch call when something promotional survived the
+  // edit pass; in the common case this is free.
+  const tells = promoTells(post);
+  if (tells.length) {
+    const rewritten = sanitizePost(await timed("depitch", buildDepitchPrompt(input, post, tells)));
+    if (rewritten && rewritten.includes("@Datarails") && promoTells(rewritten).length < tells.length) {
+      post = rewritten;
+      depitched = true;
+    }
+  }
   // One fit attempt only: each model call costs seconds of latency, and
   // trimToLimit below handles the "removed one sentence, still 5 over" case.
   if (!inRange(post)) {
@@ -428,5 +486,5 @@ export async function generatePost(input: PostInput, llm: Llm): Promise<Generate
   }
   if (post.length > MAX_CHARS) post = trimToLimit(post);
 
-  return { post, draft, edited, fitted, context, timings };
+  return { post, draft, edited, fitted, depitched, context, timings };
 }
