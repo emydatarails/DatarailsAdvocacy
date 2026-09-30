@@ -175,3 +175,38 @@ quoted so they trigger the de-pitch pass.
 What the reviewer asked for that is not done: dropping the @Datarails tag
 in some posts. The tag is a requirement of the advocacy programme, so it
 stays in every post; the mention style rotates instead.
+
+### Reviews 3 and 4, and the plateau
+
+| Review | Mean | Scores of 4 or 5 | Scores of 2 |
+|---|---|---|---|
+| 1 | 3.2 | 5 | 3 |
+| 2 | 2.6 | 0 | 5 |
+| 3 | 2.9 | 3 | 5 |
+| 4 | 3.0 | 4 | 4 |
+
+Reviewers are different each time, so about a third of a point is noise.
+The plateau is still real, and both later reviews say the same two
+things. First, whatever the prompt describes gets echoed: a mention style
+described as "where a number gets looked up now" produced "gets looked up
+in @Datarails now" in five posts; an ending described as "what the writer
+will handle differently at the next close" produced "at the next close I'm
+going to" in six. Second, every post scored 4 was a demo scene: a
+question asked and answered on the spot through the tool, often with a
+colleague turning a screen around.
+
+The reviewer's own test for the good posts was: delete the brand word and
+the post loses nothing. That is now the first instruction in the draft
+prompt, the answered-on-the-spot scene is forbidden, the model is told
+not to reuse instruction wording, and brand mentions live inside
+complaints and mundane actions. The lists that were quoted back are
+reworded to be harder to quote.
+
+A structural limit remains. Twelve posts read together by someone
+looking for patterns will always show some; one post read by its
+author's network will not. The scores that matter are the per-post ones,
+and the share of posts a hostile reader would call a testimonial went
+from five in twelve to zero, three and four across the later rounds. The
+de-pitch pass fired on two posts in round seven and rewrote "ran it
+through @Datarails" into a plain location, which is the case it exists
+for.
