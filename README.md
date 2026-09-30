@@ -24,7 +24,9 @@ View your app in AI Studio: https://ai.studio/apps/5ac8e67e-2186-4b19-afe5-5ea98
 The generation pipeline lives in `lib/generator.ts` and is shared by the Vercel
 function (`api/generate-post.ts`) and the local dev server (`server.ts`).
 It runs three model calls at most: draft, edit, and a length-fit pass that
-only fires when the edited post falls outside 600-800 characters. Every model
+only fires when the edited post falls outside 600-800 characters. The model
+is `gemini-3.8-flash` at a low thinking level (`lib/gemini.ts`); set
+`GEMINI_MODEL` to override it. Every model
 output goes through `lib/sanitize.ts`, which strips hashtags, markdown,
 commentary, wrapping quotes and em-dashes before anything is returned.
 

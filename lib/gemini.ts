@@ -8,10 +8,18 @@
 import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 import type { Llm } from "./generator.js";
 
-export const MODEL = "gemini-3-flash-preview";
+// Newest generally available Flash model as of September 2026. The Pro line
+// is still preview, several times the price and slower, which matters here:
+// the pipeline is three sequential calls for a 700-character post, so Flash
+// at a low thinking level is the better fit. Override with GEMINI_MODEL.
+export const DEFAULT_MODEL = "gemini-3.8-flash";
 export const PER_CALL_TIMEOUT_MS = 40_000;
 
-export function createGeminiLlm(apiKey: string): Llm {
+export function resolveModel(): string {
+  return process.env.GEMINI_MODEL?.trim() || DEFAULT_MODEL;
+}
+
+export function createGeminiLlm(apiKey: string, model: string = resolveModel()): Llm {
   const genAI = new GoogleGenAI({
     apiKey,
     httpOptions: {
@@ -22,7 +30,7 @@ export function createGeminiLlm(apiKey: string): Llm {
 
   const call = async (prompt: string, withThinkingConfig: boolean) => {
     const response = await genAI.models.generateContent({
-      model: MODEL,
+      model,
       contents: prompt,
       config: withThinkingConfig
         ? { thinkingConfig: { thinkingLevel: ThinkingLevel.LOW } }
