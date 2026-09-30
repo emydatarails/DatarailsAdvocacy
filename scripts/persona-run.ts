@@ -144,30 +144,41 @@ export const personas: Record<string, PostInput> = {
   },
 };
 
-function seededPick<T>(arr: T[], seed: number, salt: number): T {
-  // Small deterministic hash so a seed reproduces the same context.
-  let h = (seed * 2654435761 + salt * 40503) >>> 0;
-  h ^= h >>> 13;
-  h = Math.imul(h, 0x5bd1e995) >>> 0;
-  h = (h ^ (h >>> 15)) >>> 0;
-  return arr[h % arr.length];
+// mulberry32: a small PRNG so one seed yields an independent, uniform draw
+// per list. The earlier salted hash clustered choices across nearby seeds,
+// which made the evaluation rounds look more repetitive than production
+// (Math.random) would be.
+function rng(seed: number): () => number {
+  let a = (seed * 0x9e3779b1) >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function seededPick<T>(arr: T[], next: () => number): T {
+  return arr[Math.floor(next() * arr.length)];
 }
 
 export function contextForSeed(seed: number): DraftContext {
+  const next = rng(seed);
   return {
-    archetype: seededPick(narrativeArchetypes, seed, 1),
-    openingPattern: seededPick(openingPatterns, seed, 2),
-    postTrigger: seededPick(postTriggers, seed, 3),
-    writerVoice: seededPick(writerVoices, seed, 4),
-    sceneSeed: seededPick(sceneSeeds, seed, 5),
-    mentionStyle: seededPick(mentionStyles, seed, 6),
-    honestyBeat: seededPick(honestyBeats, seed, 7),
-    ending: seededPick(endings, seed, 8),
-    setupCost: seededPick(setupCosts, seed, 9),
-    deadline: seededPick(deadlines, seed, 10),
-    region: seededPick(regions, seed, 11),
-    sourceSystem: seededPick(sourceSystems, seed, 12),
-    weekday: seededPick(weekdays, seed, 13),
+    archetype: seededPick(narrativeArchetypes, next),
+    openingPattern: seededPick(openingPatterns, next),
+    postTrigger: seededPick(postTriggers, next),
+    writerVoice: seededPick(writerVoices, next),
+    sceneSeed: seededPick(sceneSeeds, next),
+    mentionStyle: seededPick(mentionStyles, next),
+    honestyBeat: seededPick(honestyBeats, next),
+    ending: seededPick(endings, next),
+    setupCost: seededPick(setupCosts, next),
+    deadline: seededPick(deadlines, next),
+    region: seededPick(regions, next),
+    sourceSystem: seededPick(sourceSystems, next),
+    weekday: seededPick(weekdays, next),
   };
 }
 

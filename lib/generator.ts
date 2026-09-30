@@ -51,11 +51,6 @@ export const narrativeArchetypes = [
       "Start with something finance people admit to each other but rarely post: a workaround they were embarrassed by, a number they never fully trusted, a habit they hid. Then show what changed, without glossing the hard parts.",
   },
   {
-    name: "Proven wrong",
-    description:
-      "Begin from real resistance. The writer had good reasons to doubt any new tool, and says what those reasons were. Show the moment the doubt cracked. This is a mind changing, not a pitch; keep the skepticism visible to the end.",
-  },
-  {
     name: "The question",
     description:
       "Frame the story around one specific question a leader or auditor asked, the kind that used to trigger a scramble, and what answering it looks like now. Focus on the people in the room and how their posture changed, not on software.",
@@ -121,14 +116,12 @@ FORMAT RULES FOR THIS STYLE:
 export const openingPatterns = [
   "Open cold, mid-scene. No stage setting. The reader arrives in the middle of a moment that is already happening.",
   "Open with a count of something mundane: exports, tabs, sign-offs, reminders. A full sentence that says what the things were and where they went, never a bare number and never a remark about counting them. Then move on.",
-  "Open with the question a leader, auditor or board member asked, in their words, then answer it in one line.",
   "Open with a recurring task that used to eat a specific evening or weekend. Name the task, not the feeling.",
   "Open with a belief the writer held about their own process, stated the way they would have said it in a meeting at the time. Do not start with 'For years' or 'I used to'. Then take it apart.",
-  "Open on something a colleague said. Just the remark, then the context.",
   "Open with the absence of something: a message that did not arrive, a meeting that did not slip, a file nobody asked for.",
   "Open with the result, stated flatly, then go back and earn it.",
   "Open with a concrete thing the writer did every month that, in hindsight, was the problem. Name the task in the first sentence; do not start with 'For years' or 'I used to'.",
-  "Open in the middle of explaining something to a new hire or an auditor.",
+  "Open in the middle of explaining something to an auditor, without quoting anyone.",
   "Open with the calendar: budget season, year-end, the first close after a change. Place the reader in that stretch of the year.",
   "Open with a small physical action at the desk: closing a laptop, deleting a folder, leaving a tab open out of habit.",
 ];
@@ -154,7 +147,7 @@ export const writerVoices = [
   "A slow builder. Sets a scene with texture before getting to the point, and the point lands quietly.",
   "Collegial. Cannot tell this story without the team in it.",
   "Energized but not breathless. Still a little surprised by how different things are.",
-  "Skeptical by temperament. Took a while to be convinced and wants the reader to know that.",
+  "Wary by temperament. Still is. Never says they were convinced; says what they saw.",
   "A leader who zooms out. Results matter, but what changed for the people matters more.",
   "Writes like they talk: natural rhythm, a little dry, occasionally wry, never trying to sound like a post.",
 ];
@@ -179,8 +172,8 @@ export const sceneSeeds = [
 // quoted example would be copied into every post.
 export const mentionStyles = [
   "as a place where a specific report or model now sits, named once in passing, the way you would name a folder or a system",
-  "inside a sentence about a colleague doing something themselves, where the brand is just where they did it",
-  "as the thing the writer doubted, named at the point the doubt showed up",
+  "in a sentence about where a particular number gets looked up now, in passing, with no comment on it",
+  "in a list of what the writer had open that morning, with no more weight than the browser tab next to it",
   "in the middle of a list of the systems involved in the story, with no more weight than the ERP or the ledger",
   "as the thing one specific process was moved into, mentioned in passing, with no claim about what that caused",
   "as what was on screen during the scene, named once, then never mentioned again",
@@ -207,9 +200,7 @@ export const endings = [
   "ends on a complete sentence about a small next task, with no wrap-up sentence after it",
   "ends on a flat statement of what is on the calendar next, with no feeling attached",
   "ends on a question the writer still has about their own process, asked plainly",
-  "ends on something mundane a colleague said that is not a verdict on anything",
   "ends the moment the scene ends, one sentence after the last concrete action",
-  "ends on a detail from outside the story that the writer noticed at the time, unconnected to the point",
   "ends on one thing the writer will handle differently at the next close, stated as a plan, not a lesson, and not starting with the words next month",
 ];
 
@@ -287,6 +278,10 @@ PHRASES AND MOVES THAT ARE USED TO DEATH IN POSTS LIKE THIS (do not use any of t
 - An unfinished final sentence as a way of sounding casual
 - A colleague's quoted remark that delivers the point of the post
 - "review instead of rebuild", "the same model", "nothing to paste", "on screen by the time", "matched to the pound/cent"
+- "I had to think", "I had doubts", "I doubted", "I argued against", "lost that one", "she was right"
+- A colleague doing the key step "herself" or "himself" in the tool
+- A stray detail at the end (a lunch order, a noise outside) placed to look unscripted
+- "Next month I'm" as the last sentence
 - A closing line that sounds like an aphorism or a bumper sticker
 - Any sentence that could be lifted from a case study or a vendor page`;
 
@@ -357,8 +352,8 @@ ${sceneSeed}. Use this as the backdrop for the concrete scene. Pick details that
 
 THE WRITER'S WORLD (use these; they are this person's real context, not the first ones that come to mind):
 - The business is in ${region}.
-- The deadline the scene runs against is ${deadline}, and the day that matters is a ${weekday}.
-- One source system in the story is ${sourceSystem}. If it does not fit this industry, use a neighbouring system of the same kind, not a famous one.
+- The deadline the scene runs against is ${deadline}, and the day that matters is a ${weekday}. That is context for the scene, never a scoreboard: the post does not say the deadline was beaten or met early.
+- If a source system is named, it is ${sourceSystem} (or a neighbouring system of the same kind if that one does not fit the industry). Naming none is fine. Never list systems.
 - Colleagues are referred to by role, never by first name.
 - How the new setup came to be: ${setupCost}. Do not add a line about the writer's own effort building it unless that is the cost named here.
 
@@ -391,8 +386,8 @@ HOW REAL PEOPLE WRITE THIS KIND OF POST:
 - Starting a sentence with "And", "But" or "So" is fine.
 - The change was partial and unglamorous. Nobody else quietly did the work for the writer, and the writer does not footnote their own effort either. Do not stage a before scene and an after scene at the same date.
 - Write the way this person talks: most people use contractions in a post. At most one clock time, at most two named source systems, no first names.
-- The scene is not a demo. A leader asking a question and getting an answer in one click is a demo; a leader asking a question and getting an answer the writer had to think about is a story.
-- The writer was not a skeptic who was won over. If they doubted the change, they are still allowed to doubt parts of it at the end.
+- The scene is not a demo. A leader asking a question and getting an answer in one click is a demo. If a question is asked, the writer does not fully answer it on the spot.
+- The writer was never a skeptic who was won over, and never says they had doubts. Doubt that remains is fine; doubt that was resolved is a testimonial.
 - Mention @Datarails exactly once, ${mentionStyle}. It is never the subject of a sentence and never the reason something is good: the writer and the team do things, the brand is where or with what. Never "with @Datarails", "thanks to @Datarails", "@Datarails lets us". Never in the last two sentences.
 - Do not explain what Datarails is or list features. Only what changed for this person and their team.
 
@@ -402,8 +397,9 @@ THIS IS NOT AN AD. A reader should be unable to tell whether the writer likes th
 - No recommendation, no invitation, no advice to the reader, no "if you're dealing with", no exclamation marks, no gratitude to the vendor.
 - The post never ends on the product and never ends on a reward.
 
-NUMBERS:
-- The outcomes above may contain percentages. Use at most one of them as a stated figure. Express the rest in lived terms (two days instead of five, one folder instead of thirty files, an evening back) or leave them out.
+NUMBERS AND OUTCOMES:
+- The outcomes in the brief are the reason for the post, not its content. Do not state an improvement as a comparison: no "two days instead of five", "half the time", "before it took", "went out Thursday instead of Friday". Say what happened on one specific day and what did not, in the same flat register, and let the reader do the arithmetic.
+- At most one figure of any kind in the whole post, and none of the percentages from the brief.
 - Never list outcomes back to back. That is a slide, not a post.
 ${overusedMoves}
 
