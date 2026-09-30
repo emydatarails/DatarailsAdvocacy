@@ -15,3 +15,10 @@ test("does not flag a plain account of work", () => {
   const post = "The plant data was already sitting in @Datarails when the request came in, refreshed that morning. I still keep one tab I probably should delete. Close is two days shorter, and the pack went out once.";
   assert.deepEqual(promoTells(post), []);
 });
+
+test("flags case-study vocabulary and reward closers", () => {
+  assert.ok(promoTells("I no longer dread the board pack.").length > 0);
+  assert.ok(promoTells("Everything now comes from one place, a single source of truth.").length > 0);
+  assert.ok(promoTells("The pack went out at three.\n\nThen I walked the dog before it got dark.").length > 0);
+  assert.deepEqual(promoTells("I walked the dog at six and came back to a reconciliation that still did not tie."), []);
+});

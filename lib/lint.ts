@@ -64,6 +64,8 @@ const PROMO_PATTERNS: Array<[RegExp, string]> = [
   [/\bif (you|your team)('re| are)? (still|struggling|dealing|drowning|stuck|spending|tired)\b/i, "addressing the reader as a prospect"],
   [/\b(game[- ]chang|life[- ]chang|no[- ]brainer|best decision|worth every|trust me|shout[- ]?out|kudos to|hats off)\b/i, "marketing superlative"],
   [/\b(the|this|our) (platform|tool|solution|software|system) (is|was|has)\b/i, "talking about the product as a product"],
+  [/\bI no longer\b/i, "case-study 'I no longer'"],
+  [/\b(one|single) (place|source|version) of (the )?truth\b|\bslightly different truth\b|\bsingle source\b/i, "single-source-of-truth vocabulary"],
   [/!/, "exclamation mark"],
   [/\d+\s?%[^.]*\d+\s?%/, "two percentages in one sentence"],
 ];
@@ -74,6 +76,11 @@ export function promoTells(post: string): string[] {
     const m = post.match(re);
     if (m) tells.push(`${label}: "${m[0].trim()}"`);
   }
+  // A wholesome reward as the final sentence is the case-study payoff.
+  const sentences = post.trim().split(/(?<=[.!?])\s+/);
+  const last = sentences[sentences.length - 1] || "";
+  const reward = last.match(/\b(walked the dog|went to bed at|(daughter|son|kid)'?s? (game|recital|match)|made (dinner|pasta)|went home (early|at)|signed off at|left at \d|closed the laptop at)\b/i);
+  if (reward) tells.push(`reward closer: "${last.trim()}"`);
   const percentages = (post.match(/\d+\s?%/g) || []).length;
   if (percentages >= 3) tells.push(`${percentages} percentage figures in one post`);
   return tells;

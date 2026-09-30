@@ -37,7 +37,7 @@ export const MAX_CHARS = 800;
 // Models count words far more reliably than characters, so the prompts
 // budget in words and paragraphs. 105-125 words lands at roughly 620-740
 // characters, which leaves the edit pass room under the 800 ceiling.
-const WORD_BUDGET = "105 to 125 words";
+const WORD_BUDGET = "100 to 115 words";
 
 export const narrativeArchetypes = [
   {
@@ -68,7 +68,7 @@ export const narrativeArchetypes = [
   {
     name: "The team, not me",
     description:
-      "Make it about the people around the writer: the analyst who stopped bracing for Monday, the accountant who now answers questions herself, the leader who stopped waiting for a PDF. First person, but the writer is not the hero.",
+      "Make it about the people around the writer: what a specific colleague's week looks like now, told through one exchange with them. First person, but the writer is not the hero, and neither is the colleague; nobody performs a feat with the tool.",
   },
   {
     name: "Then and now",
@@ -78,7 +78,7 @@ export const narrativeArchetypes = [
   {
     name: "The handoff",
     description:
-      "Anchor on explaining the process to someone new: a hire, a successor, an auditor. The writer notices, mid-explanation, that the process is now explainable in a sentence, and remembers when it took a week and a folder of files.",
+      "Anchor on explaining the process to someone new: a hire, a successor, an auditor. The explanation is shorter than it used to be, but it is still an explanation, with a part the writer is a little embarrassed by. No punchline about there being nothing left to explain.",
   },
   {
     name: "The thing I stopped doing",
@@ -182,8 +182,33 @@ export const mentionStyles = [
   "inside a sentence about a colleague doing something themselves, where the brand is just where they did it",
   "as the thing the writer doubted, named at the point the doubt showed up",
   "in the middle of a list of the systems involved in the story, with no more weight than the ERP or the ledger",
-  "as the thing the team moved one specific process into, in the past tense, with what stopped happening as a result",
+  "as the thing one specific process was moved into, mentioned in passing, with no claim about what that caused",
   "as what was on screen during the scene, named once, then never mentioned again",
+];
+
+// The one honest, unflattering element in the post. Rotated so it does not
+// always land as "X still comes in on paper and I still key it in" in the
+// penultimate paragraph.
+export const honestyBeats = [
+  "the migration is partial: one process moved, a related one did not, and the writer says which",
+  "the first month or quarter on the new setup was worse than before, and the writer says how",
+  "a number in the new model was wrong for a reason nobody has found yet",
+  "a habit the writer refuses to give up, stated without apology and without a lesson",
+  "a mistake of the writer's own that is not redeemed by the end of the post",
+  "the writer still does not fully trust the output and checks it, and does not pretend that is going away",
+  "nothing extra: the scene itself is unflattering enough, so no separate confession is added",
+];
+
+// How the post ends. The audit found eight of twelve ending on a wholesome
+// reward (went home, walked the dog, bed at ten), which reads as a
+// case-study payoff. None of these are that.
+export const endings = [
+  "ends mid-thought on a work detail, the way a message ends when the writer got pulled into something",
+  "ends on the unresolved error or the thing that is still broken, with no consolation after it",
+  "ends on a flat statement of what is on the calendar next, with no feeling attached",
+  "ends on a question the writer still has about their own process",
+  "ends on something a colleague said, unanswered",
+  "ends the moment the scene ends, one sentence after the last concrete action",
 ];
 
 // Recurring tells from the persona audit. Any one of these is fine in a
@@ -205,7 +230,14 @@ PHRASES AND MOVES THAT ARE USED TO DEATH IN POSTS LIKE THIS (do not use any of t
 - "Nobody" as the payoff word ("nobody asked", "nobody noticed", "nobody was waiting") more than once
 - "For years I assumed", "For years I believed", "I used to think" as the first words
 - "the version that lives in", "since we moved consolidation into", "pulls their own numbers" as the brand sentence
-- A colleague "doing it themselves" as the payoff more than once
+- A colleague or junior who "had already built it" in the tool before the writer got in, or did the hero move on their own
+- A closing reward: went home early, walked the dog, made dinner, bed at ten, a child's game, a walk, signed off at four
+- A before scene and an after scene staged at the same date ("August two years ago" then "August this year")
+- Someone being out, on leave or having just resigned as the reason the writer had to do the work
+- A "walked a new hire through it and there was nothing to explain" punchline
+- "I no longer ...", "one place", "one version of the truth", "slightly different truth", "the whole workflow in one sentence"
+- Opening with "Which one of these is the real ..." or "Closed the laptop ... and then opened it again"
+- More than one clock time, more than two named source systems, more than one named colleague
 - A closing line that sounds like an aphorism or a bumper sticker
 - Any sentence that could be lifted from a case study or a vendor page`;
 
@@ -216,6 +248,8 @@ export interface DraftContext {
   writerVoice: string;
   sceneSeed: string;
   mentionStyle: string;
+  honestyBeat: string;
+  ending: string;
 }
 
 export function pickRandom<T>(arr: T[]): T {
@@ -230,6 +264,8 @@ export function pickDraftContext(): DraftContext {
     writerVoice: pickRandom(writerVoices),
     sceneSeed: pickRandom(sceneSeeds),
     mentionStyle: pickRandom(mentionStyles),
+    honestyBeat: pickRandom(honestyBeats),
+    ending: pickRandom(endings),
   };
 }
 
@@ -242,10 +278,13 @@ function describePerson(input: PostInput): string {
 
 export function buildDraftPrompt(input: PostInput, ctx: DraftContext): string {
   const { style } = input;
-  const { archetype, openingPattern, postTrigger, writerVoice, sceneSeed, mentionStyle } = ctx;
+  const { archetype, openingPattern, postTrigger, writerVoice, sceneSeed, mentionStyle, honestyBeat, ending } = ctx;
   const styleGuide = styleInstructions[style as string] || styleInstructions.professional;
 
   return `You are ghostwriting a LinkedIn post for a finance professional about their real experience using Datarails. It has to read like something they typed themselves in one sitting: not a press release, not a testimonial, not a "thought leadership" post. A real person, being specific about their own work.
+
+SIZE, BEFORE ANYTHING ELSE:
+${WORD_BUDGET} in total. That is a short post: one scene, one honest element, and they can share sentences. Drafts that run long get cut by an editor who does not know which detail mattered to you, so write short and keep the detail you care about.
 
 WHO IS WRITING:
 ${describePerson(input)}
@@ -268,23 +307,32 @@ HOW TO OPEN:
 ${openingPattern}
 This overrides whatever opening you would reach for by default. Do not open with "I was", "I remember" or "It was".
 
+THE HONEST ELEMENT:
+${honestyBeat}
+Place it wherever it belongs in the story, not in a fixed slot before the ending.
+
+HOW IT ENDS:
+${ending}
+No moral, no reward, no "I no longer", no line that sums up what changed.
+
 ${styleGuide}
 
 HOW REAL PEOPLE WRITE THIS KIND OF POST:
-- This is a short post. One scene, one admission, one change. Not everything in the brief has to appear; pick what fits the scene and leave the rest out.
+- Not everything in the brief has to appear. Pick what fits the scene and leave the rest out.
 - One concrete scene anchors everything. Which system, which report, which day of the process, who was waiting. Not "reporting was painful" but the specific afternoon it was.
 - Details should belong to this industry and role. A controller in manufacturing and an analyst in retail do not have the same bad day.
 - Mix sentence lengths. A long sentence that carries a whole thought, then a short one. Never three sentences of the same length in a row.
 - Starting a sentence with "And", "But" or "So" is fine.
-- Include one small unflattering admission: a workaround, a doubt, a thing they got wrong. One, not three.
+- The change was partial and unglamorous. The writer did the tedious setup themselves and it cost them something; nobody else quietly did it for them. Do not stage a before scene and an after scene at the same date.
+- Write the way this person talks: most people use contractions in a post. At most one clock time, at most two named source systems, at most one named colleague.
 - Mention @Datarails exactly once, ${mentionStyle}. It is never the subject of a sentence and never the reason something is good: the writer and the team do things, the brand is where or with what. Never "with @Datarails", "thanks to @Datarails", "@Datarails lets us". Never in the last two sentences.
 - Do not explain what Datarails is or list features. Only what changed for this person and their team.
 
 THIS IS NOT AN AD. A reader should be unable to tell whether the writer likes the vendor:
 - The outcome phrases in the brief are marketing language. Do not reuse their wording. Translate each into what the writer saw and could point to on a calendar or a screen, or leave it out.
-- Include one thing that did not change or still annoys the writer. Real people always have one. It is not undercut afterwards.
+- No accuracy or speed claims phrased as results ("landed within a few points", "in under an hour"). Say what happened on the day, not what it proves.
 - No recommendation, no invitation, no advice to the reader, no "if you're dealing with", no exclamation marks, no gratitude to the vendor.
-- The post ends on the writer's own life or work, never on the product.
+- The post never ends on the product and never ends on a reward.
 
 NUMBERS:
 - The outcomes above may contain percentages. Use at most one of them as a stated figure. Express the rest in lived terms (two days instead of five, one folder instead of thirty files, an evening back) or leave them out.
@@ -296,7 +344,7 @@ game-changer, revolutionize, synergy, leverage, streamline, empower, unlock, tra
 
 HARD REQUIREMENTS:
 - First person throughout.
-- Length: ${WORD_BUDGET} in total, following the paragraph count in the format rules. That is about ${MIN_CHARS} to ${MAX_CHARS} characters, and the ceiling is enforced, so when in doubt write less. Count the words before you answer and cut whole sentences if you are over.
+- Length: ${WORD_BUDGET}, following the paragraph count in the format rules. That is roughly ${MIN_CHARS} to ${MAX_CHARS} characters and the ceiling is enforced, so when in doubt write less. Count the words before you answer and cut whole sentences if you are over.
 - No hashtags anywhere. Not at the end, not inline. Not one.
 - No emojis, no bullet points, no headings, no bold, no markdown of any kind.
 - No em-dashes or en-dashes. Use a comma, a colon, a full stop or a plain hyphen.
@@ -310,7 +358,7 @@ export function buildEditPrompt(input: PostInput, draft: string): string {
   const chars = draft.length;
   const lengthNote =
     chars > MAX_CHARS
-      ? `The draft is ${chars} characters, which is ${chars - MAX_CHARS} over the ${MAX_CHARS} ceiling. Remove at least ${Math.ceil((chars - MAX_CHARS) / 60) + 1} whole sentences, starting with the least specific ones, so it lands near ${MAX_CHARS - 60}. Do not compress every sentence.`
+      ? `The draft is ${chars} characters, which is ${chars - MAX_CHARS} over the ${MAX_CHARS} ceiling. Get it to about ${MAX_CHARS - 60}: remove ${Math.min(4, Math.ceil((chars - MAX_CHARS) / 80) + 1)} or more whole sentences, starting with setup and explanation, and tighten the rest. Keep the sentence naming @Datarails and the one honest, unflattering detail; cut around them.`
       : chars < MIN_CHARS
         ? `The draft is ${chars} characters, under the ${MIN_CHARS} floor. Add one concrete detail to the existing scene. Do not add a new paragraph of reflection.`
         : `The draft is ${chars} characters. Keep it between ${MIN_CHARS} and ${MAX_CHARS}. Your edit must not make it longer; if you add a phrase, cut one.`;
@@ -345,7 +393,7 @@ WHAT TO FIX, IN ORDER:
 
 4. Voice. The post needs one opinion or reaction that is clearly this person's, and one detail only someone in that job would mention. If the draft already has both, leave them alone. If it lacks them, add one of each in the writer's own register. Do not add slang, do not add jokes, do not add a lesson.
 
-5. Pitch check. Read it once more as a skeptical peer who assumes the vendor asked for this post. Any sentence that could be pasted into a vendor testimonial gets rewritten as a plain observation of what happened, or cut. @Datarails must appear exactly once, never as the subject of a sentence, never as the reason something is good, never in the last two sentences. If the post has no moment where something is still imperfect or unchanged, add one short one in the writer's register. No exclamation marks.
+5. Pitch check. Read it once more as a skeptical peer who assumes the vendor asked for this post. Any sentence that could be pasted into a vendor testimonial gets rewritten as a plain observation of what happened, or cut. @Datarails must appear exactly once, never as the subject of a sentence, never as the reason something is good, never in the last two sentences. If the post ends on a reward (went home, walked the dog, bed at ten, a child's game) or on a line that sums up what changed, cut that line and end one sentence earlier. If a colleague "had already built it" before the writer arrived, give the work back to the writer. No exclamation marks.
 ${overusedMoves}
 
 HARD REQUIREMENTS:
@@ -382,7 +430,7 @@ export function buildFitPrompt(post: string): string {
   const chars = post.length;
   const direction =
     chars > MAX_CHARS
-      ? `It is ${chars} characters and must be at most ${MAX_CHARS}. Remove whole sentences, starting with the least specific ones, until it is under ${MAX_CHARS - 40}. Removing one sentence is rarely enough; count after each cut. Do not rewrite the sentences you keep.`
+      ? `It is ${chars} characters and must be at most ${MAX_CHARS}. Remove whole sentences from the setup and explanation, not from the ending, until it is under ${MAX_CHARS - 40}. Removing one sentence is rarely enough; count after each cut. Keep the sentence naming @Datarails and the one honest, unflattering detail. Do not rewrite the sentences you keep.`
       : `It is ${chars} characters and must be at least ${MIN_CHARS}. Add one or two concrete sentences that belong to the existing scene. Do not add a new paragraph of reflection or a conclusion.`;
 
   return `Adjust the length of this LinkedIn post. ${direction}

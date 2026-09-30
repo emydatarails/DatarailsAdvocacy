@@ -40,6 +40,8 @@ import {
   postTriggers,
   sceneSeeds,
   mentionStyles,
+  honestyBeats,
+  endings,
   writerVoices,
   type DraftContext,
   type PostInput,
@@ -154,6 +156,8 @@ export function contextForSeed(seed: number): DraftContext {
     writerVoice: seededPick(writerVoices, seed, 4),
     sceneSeed: seededPick(sceneSeeds, seed, 5),
     mentionStyle: seededPick(mentionStyles, seed, 6),
+    honestyBeat: seededPick(honestyBeats, seed, 7),
+    ending: seededPick(endings, seed, 8),
   };
 }
 
