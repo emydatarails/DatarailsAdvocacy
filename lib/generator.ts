@@ -2,8 +2,8 @@
 // server.ts (local dev). Keep all prompt text here so the two entry points
 // never drift apart.
 //
-// Pipeline: draft -> sanitize -> edit pass -> sanitize -> (fit pass if the
-// length is off) -> sanitize -> last-resort trim. The prompts ask for clean
+// Pipeline: draft -> sanitize -> edit pass -> sanitize -> (one fit pass if
+// the length is off) -> sanitize -> last-resort trim. The prompts ask for clean
 // output; the code guarantees it (no hashtags, no em-dashes, no markdown,
 // no commentary, length inside the window).
 //
@@ -24,7 +24,11 @@ export interface PostInput {
   keyOutcome: string;
 }
 
-export type Llm = (prompt: string) => Promise<string>;
+export type Stage = "draft" | "edit" | "fit";
+
+// The stage lets the adapter pick a thinking level per call: the draft is
+// where reasoning pays off, the edit and fit passes are mechanical.
+export type Llm = (prompt: string, stage: Stage) => Promise<string>;
 
 export const MIN_CHARS = 600;
 export const MAX_CHARS = 800;
@@ -385,27 +389,38 @@ export interface GenerateResult {
   edited: string;
   fitted: boolean;
   context: DraftContext;
+  /** Wall-clock milliseconds spent in each model call (0 if it did not run). */
+  timings: Record<Stage, number>;
 }
 
 export async function generatePost(input: PostInput, llm: Llm): Promise<GenerateResult> {
   const context = pickDraftContext();
+  const timings: Record<Stage, number> = { draft: 0, edit: 0, fit: 0 };
+  const timed = async (stage: Stage, prompt: string) => {
+    const started = Date.now();
+    try {
+      return (await llm(prompt, stage)) || "";
+    } finally {
+      timings[stage] += Date.now() - started;
+    }
+  };
 
-  const draft = sanitizePost((await llm(buildDraftPrompt(input, context))) || "");
+  const draft = sanitizePost(await timed("draft", buildDraftPrompt(input, context)));
   if (!draft) {
-    return { post: "", draft: "", edited: "", fitted: false, context };
+    return { post: "", draft: "", edited: "", fitted: false, context, timings };
   }
 
-  const editedRaw = await llm(buildEditPrompt(input, draft));
+  const editedRaw = await timed("edit", buildEditPrompt(input, draft));
   let edited = sanitizePost(editedRaw || "");
   // If the edit pass returned garbage, fall back to the draft.
   if (!edited || !edited.includes("@Datarails")) edited = draft;
 
   let post = edited;
   let fitted = false;
-  // The fit pass usually lands in one go; a second attempt catches the
-  // "removed one sentence, still 5 over" case before code has to cut.
-  for (let attempt = 0; attempt < 2 && !inRange(post); attempt++) {
-    const fittedRaw = sanitizePost((await llm(buildFitPrompt(post))) || "");
+  // One fit attempt only: each model call costs seconds of latency, and
+  // trimToLimit below handles the "removed one sentence, still 5 over" case.
+  if (!inRange(post)) {
+    const fittedRaw = sanitizePost(await timed("fit", buildFitPrompt(post)));
     if (fittedRaw && fittedRaw.includes("@Datarails")) {
       post = fittedRaw;
       fitted = true;
@@ -413,5 +428,5 @@ export async function generatePost(input: PostInput, llm: Llm): Promise<Generate
   }
   if (post.length > MAX_CHARS) post = trimToLimit(post);
 
-  return { post, draft, edited, fitted, context };
+  return { post, draft, edited, fitted, context, timings };
 }

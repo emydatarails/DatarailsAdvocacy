@@ -24,7 +24,9 @@ View your app in AI Studio: https://ai.studio/apps/5ac8e67e-2186-4b19-afe5-5ea98
 The generation pipeline lives in `lib/generator.ts` and is shared by the Vercel
 function (`api/generate-post.ts`) and the local dev server (`server.ts`).
 It runs three model calls at most: draft, edit, and a length-fit pass that
-only fires when the edited post falls outside 600-800 characters. Every model
+only fires when the edited post falls outside 600-800 characters. The model
+is `gemini-3.8-flash` at a low thinking level (`lib/gemini.ts`); set
+`GEMINI_MODEL` to override it. Every model
 output goes through `lib/sanitize.ts`, which strips hashtags, markdown,
 commentary, wrapping quotes and em-dashes before anything is returned.
 
@@ -44,3 +46,22 @@ LinkedIn tells found in the last audit. Read the posts side by side as well;
 the biggest tell is the same opening or phrase showing up across personas.
 
 `npm test` runs the sanitizer and pipeline tests against a fake model.
+
+### Choosing the thinking level
+
+`lib/gemini.ts` sets a thinking level per pipeline stage (defaults: draft
+`low`, edit `low`, fit `minimal`). Override in Vercel with `GEMINI_THINKING`
+(one level for all stages) or `GEMINI_THINKING_DRAFT`, `GEMINI_THINKING_EDIT`,
+`GEMINI_THINKING_FIT`. Measure before changing:
+
+```
+GEMINI_API_KEY=... npm run bench
+```
+
+That runs the full pipeline for four personas under `minimal`, `low`,
+`medium`, `high` and a mixed `draft=medium+edit=low+fit=minimal`, records
+per-stage latency, fit rate and lint issues, has the model blind-score each
+post for naturalness, specificity and restraint, and writes
+`bench-output/summary.md` with a comparison table and every post side by
+side. Read the posts; the scores are a tie-breaker. Pass
+`--configs a,b --personas 8 --seeds 2` to widen the run.

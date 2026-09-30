@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, useScroll, useSpring } from 'motion/react';
 import {
   CheckCircle2,
@@ -715,6 +715,22 @@ function AIAssistant() {
   const [customProfession, setCustomProfession] = useState('');
   const [outcomeMetrics, setOutcomeMetrics] = useState<Record<string, string>>({});
   const [generatedPost, setGeneratedPost] = useState('');
+  const [loadingSeconds, setLoadingSeconds] = useState(0);
+
+  // The generator runs up to three model calls in sequence. Naming the
+  // stage as time passes makes a 20-40 second wait feel like progress
+  // instead of a stall.
+  useEffect(() => {
+    if (!loading) { setLoadingSeconds(0); return; }
+    const started = Date.now();
+    const id = setInterval(() => setLoadingSeconds(Math.floor((Date.now() - started) / 1000)), 500);
+    return () => clearInterval(id);
+  }, [loading]);
+  const loadingStage =
+    loadingSeconds < 8  ? 'Writing your first draft' :
+    loadingSeconds < 20 ? 'Reading it back the way an editor would' :
+    loadingSeconds < 35 ? 'Trimming it to LinkedIn length' :
+                          'Almost there, finishing up';
 
   const professions = ['FP&A Manager', 'Controller', 'CFO', 'Finance Director', 'VP Finance', 'Finance Analyst'];
   const industries  = ['SaaS', 'Manufacturing', 'Healthcare', 'Retail', 'Services', 'Real Estate'];
@@ -793,11 +809,20 @@ function AIAssistant() {
         specificMoment: [...formData.specificMoments, customMoment].filter(Boolean).join(', '),
         keyOutcome: [...resolvedOutcomes, customOutcome].filter(Boolean).join(', '),
       };
-      const response = await fetch('/api/generate-post', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      // Never leave the loading overlay up forever: give up after 2 minutes.
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 120_000);
+      let response: Response;
+      try {
+        response = await fetch('/api/generate-post', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timer);
+      }
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data.post) {
         throw new Error(data.error || `Generation failed (${response.status})`);
@@ -805,7 +830,10 @@ function AIAssistant() {
       setGeneratedPost(data.post);
     } catch (err) {
       console.error(err);
-      alert(err instanceof Error ? err.message : 'Failed to generate post. Please try again.');
+      const timedOut = err instanceof DOMException && err.name === 'AbortError';
+      alert(timedOut
+        ? 'Generation is taking too long. Please try again.'
+        : err instanceof Error ? err.message : 'Failed to generate post. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -920,7 +948,7 @@ function AIAssistant() {
             margin: 0,
             letterSpacing: '-0.01em',
           }}>
-            Writing your personal draft and making sure it's awesome
+            {loadingStage}
           </p>
 
           {/* Patience hint */}
@@ -935,7 +963,7 @@ function AIAssistant() {
             margin: '-16px 0 0',
             letterSpacing: '0.01em',
           }}>
-            Good things take time — this can take up to a minute.<br />Please don't refresh the page!
+            Usually 20 to 40 seconds. Please don't refresh the page!
           </p>
 
           {/* Bouncing dots */}

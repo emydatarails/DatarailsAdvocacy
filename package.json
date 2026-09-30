@@ -11,7 +11,8 @@
     "lint": "tsc --noEmit",
     "test": "tsx --test lib/*.test.ts",
     "personas": "tsx scripts/persona-run.ts run --count 2 --out persona-output",
-    "personas:lint": "tsx scripts/persona-run.ts lint persona-output"
+    "personas:lint": "tsx scripts/persona-run.ts lint persona-output",
+    "bench": "tsx scripts/persona-run.ts bench --judge"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",

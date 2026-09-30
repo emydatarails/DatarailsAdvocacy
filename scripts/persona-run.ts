@@ -18,6 +18,12 @@
 //       Prints the sanitized version of a post and its length.
 //   npx tsx scripts/persona-run.ts lint DIR
 //       Lints every *.txt / *.json post in DIR and prints a report.
+//   npx tsx scripts/persona-run.ts bench [--configs minimal,low,medium,high,draft=medium+edit=low+fit=minimal]
+//                                        [--personas 4] [--seeds 1] [--judge] [--out bench-output]
+//       Runs the full pipeline for each thinking configuration and reports
+//       latency per stage, length-fit rate, lint issues and (with --judge) a
+//       blind 1-10 naturalness score from the model, so the thinking level
+//       can be chosen on evidence. Needs GEMINI_API_KEY.
 
 import fs from "fs";
 import path from "path";
@@ -151,14 +157,164 @@ function arg(name: string, fallback?: string): string | undefined {
   return i >= 0 ? process.argv[i + 1] : fallback;
 }
 
-async function geminiLlm(prompt: string): Promise<string> {
-  const { GoogleGenAI } = await import("@google/genai");
-  const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
-  const r = await genAI.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: prompt,
-  });
-  return r.text || "";
+async function geminiLlm(): Promise<import("../lib/generator.js").Llm> {
+  const { createGeminiLlm } = await import("../lib/gemini.js");
+  return createGeminiLlm(process.env.GEMINI_API_KEY || "");
+}
+
+// Blind quality judge. Scores are only comparable within one bench run and
+// one judge model; they are a tie-breaker for reading the posts, not a
+// replacement for it.
+export function buildJudgePrompt(post: string): string {
+  return `You are a finance professional who spends a lot of time on LinkedIn and has a sharp eye for posts written by AI tools. Read the post below and score it.
+
+POST:
+${post}
+
+Score three things from 1 to 10:
+- natural: does this read like a specific person typed it, as opposed to a template or a model? 10 means you would not suspect a tool.
+- specific: are the details concrete and plausible for this person's job (systems, reports, timing, who was waiting)? 10 means every detail could only come from someone who does this work.
+- restraint: is it free of marketing tone, stacked outcomes and slogan endings? 10 means nothing reads like a vendor wrote it.
+
+Also list up to five short phrases from the post that read as AI or LinkedIn cliches, or an empty list.
+
+Return only JSON: {"natural": n, "specific": n, "restraint": n, "tells": ["..."]}`;
+}
+
+interface BenchRow {
+  config: string;
+  persona: string;
+  seed: number;
+  chars: number;
+  totalMs: number;
+  draftMs: number;
+  editMs: number;
+  fitMs: number;
+  fitted: boolean;
+  lintIssues: string[];
+  judge?: { natural: number; specific: number; restraint: number; tells: string[] };
+}
+
+function mean(xs: number[]): number {
+  return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0;
+}
+function p95(xs: number[]): number {
+  if (!xs.length) return 0;
+  const sorted = [...xs].sort((a, b) => a - b);
+  return sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95))];
+}
+
+async function bench() {
+  if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is required for bench mode");
+  const { createGeminiLlm, parseThinkingPlan, resolveModel } = await import("../lib/gemini.js");
+  const configs = (arg("configs", "minimal,low,medium,high,draft=medium+edit=low+fit=minimal") as string)
+    .split(",")
+    .map((c) => c.trim())
+    .filter(Boolean);
+  const personaCount = Number(arg("personas", "4"));
+  const seeds = Number(arg("seeds", "1"));
+  const judge = process.argv.includes("--judge");
+  const out = arg("out", "bench-output")!;
+  const model = resolveModel();
+  fs.mkdirSync(out, { recursive: true });
+
+  const chosen = Object.entries(personas).slice(0, personaCount);
+  const rows: BenchRow[] = [];
+  const judgeLlm = judge ? createGeminiLlm(process.env.GEMINI_API_KEY!, { thinking: parseThinkingPlan("high") }) : null;
+
+  for (const config of configs) {
+    const plan = parseThinkingPlan(config);
+    const llm = createGeminiLlm(process.env.GEMINI_API_KEY!, { thinking: plan });
+    const dir = path.join(out, config.replace(/[^a-z0-9=]+/gi, "_"));
+    fs.mkdirSync(dir, { recursive: true });
+    for (const [key, persona] of chosen) {
+      for (let seed = 1; seed <= seeds; seed++) {
+        const started = Date.now();
+        const result = await generatePost(persona, llm);
+        const totalMs = Date.now() - started;
+        const lint = lintPost(result.post);
+        const row: BenchRow = {
+          config,
+          persona: key,
+          seed,
+          chars: result.post.length,
+          totalMs,
+          draftMs: result.timings.draft,
+          editMs: result.timings.edit,
+          fitMs: result.timings.fit,
+          fitted: result.fitted,
+          lintIssues: lint.issues,
+        };
+        if (judgeLlm && result.post) {
+          try {
+            const raw = await judgeLlm(buildJudgePrompt(result.post), "edit");
+            const json = raw.replace(/^```(?:json)?/m, "").replace(/```$/m, "").trim();
+            row.judge = JSON.parse(json);
+          } catch (e) {
+            console.warn(`judge failed for ${config}/${key}: ${e}`);
+          }
+        }
+        rows.push(row);
+        fs.writeFileSync(path.join(dir, `${key}_${seed}.json`), JSON.stringify({ persona, plan, ...result, ...row }, null, 2));
+        fs.writeFileSync(path.join(dir, `${key}_${seed}.txt`), result.post);
+        console.log(
+          `${config.padEnd(34)} ${key.padEnd(36)} ${String(totalMs).padStart(6)}ms ` +
+            `(d ${result.timings.draft} / e ${result.timings.edit} / f ${result.timings.fit})  ` +
+            `${result.post.length} chars  ${lint.issues.length} lint` +
+            (row.judge ? `  judge ${row.judge.natural}/${row.judge.specific}/${row.judge.restraint}` : ""),
+        );
+      }
+    }
+  }
+
+  // Summary table.
+  const lines: string[] = [];
+  lines.push(`# Thinking level benchmark`);
+  lines.push(``);
+  lines.push(`Model: ${model}. ${chosen.length} personas x ${seeds} seed(s) per configuration. Times are wall-clock seconds.`);
+  lines.push(``);
+  const judgeCols = judge ? ` natural | specific | restraint | tells/post |` : ``;
+  lines.push(`| config | mean total | p95 total | draft | edit | fit | needed fit | lint issues/post |${judgeCols}`);
+  lines.push(`|---|---|---|---|---|---|---|---|${judge ? "---|---|---|---|" : ""}`);
+  for (const config of configs) {
+    const rs = rows.filter((r) => r.config === config);
+    const sec = (ms: number) => (ms / 1000).toFixed(1);
+    const cells = [
+      config,
+      sec(mean(rs.map((r) => r.totalMs))),
+      sec(p95(rs.map((r) => r.totalMs))),
+      sec(mean(rs.map((r) => r.draftMs))),
+      sec(mean(rs.map((r) => r.editMs))),
+      sec(mean(rs.filter((r) => r.fitted).map((r) => r.fitMs))),
+      `${rs.filter((r) => r.fitted).length}/${rs.length}`,
+      mean(rs.map((r) => r.lintIssues.length)).toFixed(2),
+    ];
+    if (judge) {
+      const js = rs.map((r) => r.judge).filter(Boolean) as NonNullable<BenchRow["judge"]>[];
+      cells.push(
+        mean(js.map((j) => j.natural)).toFixed(1),
+        mean(js.map((j) => j.specific)).toFixed(1),
+        mean(js.map((j) => j.restraint)).toFixed(1),
+        mean(js.map((j) => j.tells.length)).toFixed(1),
+      );
+    }
+    lines.push(`| ${cells.join(" | ")} |`);
+  }
+  lines.push(``);
+  lines.push(`## Posts side by side`);
+  for (const [key] of chosen) {
+    lines.push(``, `### ${key}`);
+    for (const config of configs) {
+      const r = rows.find((x) => x.config === config && x.persona === key && x.seed === 1);
+      if (!r) continue;
+      const text = fs.readFileSync(path.join(out, config.replace(/[^a-z0-9=]+/gi, "_"), `${key}_1.txt`), "utf8");
+      lines.push(``, `**${config}** (${(r.totalMs / 1000).toFixed(1)}s, ${r.chars} chars${r.judge ? `, judge ${r.judge.natural}/${r.judge.specific}/${r.judge.restraint}` : ""})`, ``, text.split("\n").map((l) => `> ${l}`).join("\n"));
+      if (r.judge?.tells.length) lines.push(``, `> tells: ${r.judge.tells.join(" | ")}`);
+    }
+  }
+  fs.writeFileSync(path.join(out, "summary.md"), lines.join("\n"));
+  fs.writeFileSync(path.join(out, "rows.json"), JSON.stringify(rows, null, 2));
+  console.log(`\nWrote ${path.join(out, "summary.md")}`);
 }
 
 async function main() {
@@ -207,14 +363,20 @@ async function main() {
     return;
   }
 
+  if (mode === "bench") {
+    await bench();
+    return;
+  }
+
   if (mode === "run") {
     if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is required for run mode");
+    const llm = await geminiLlm();
     const count = Number(arg("count", "1"));
     const out = arg("out", "persona-output")!;
     fs.mkdirSync(out, { recursive: true });
     for (const [key, persona] of Object.entries(personas)) {
       for (let i = 0; i < count; i++) {
-        const result = await generatePost(persona, geminiLlm);
+        const result = await generatePost(persona, llm);
         const lint = lintPost(result.post);
         const file = path.join(out, `${key}_${i + 1}.json`);
         fs.writeFileSync(file, JSON.stringify({ persona, ...result, lint }, null, 2));
@@ -224,7 +386,7 @@ async function main() {
     return;
   }
 
-  console.error("Usage: persona-run.ts run|prompt|lint ...");
+  console.error("Usage: persona-run.ts run|bench|prompt|sanitize|lint ...");
   process.exit(1);
 }
 

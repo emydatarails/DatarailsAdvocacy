@@ -116,3 +116,23 @@ npm run personas:lint
 
 Read the posts side by side. The lint catches mechanics; the eye catches
 sameness.
+
+## Thinking level: quality versus wait time
+
+The pipeline is three sequential model calls, so the user's wait is the sum
+of three latencies. Thinking level is the main lever on each. Expectations,
+to be confirmed with `npm run bench` against the live model:
+
+| Stage | What thinking buys | Recommended |
+|---|---|---|
+| Draft | Picking a coherent scene from the persona, archetype, opening and seed; keeping to the word budget | `low` by default; try `medium` if drafts feel generic |
+| Edit | Removing template moves and cutting to length: a rewrite-and-count job | `low` |
+| Fit | Removing whole sentences to a count | `minimal` |
+
+`high` everywhere is the wrong trade: it multiplies latency on the two
+mechanical passes for no quality gain, and the draft prompt already carries
+the creative constraints. The mixed `draft=medium+edit=low+fit=minimal`
+configuration is the one to compare against the all-`low` default.
+
+The wizard's overlay now names the stage as time passes (draft, editing,
+trimming) so a 20 to 40 second wait reads as progress.
